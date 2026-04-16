@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Dictionary Evaluation{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h3 class="mb-4">Dictionary-Based Evaluation Results</h3>
+
+    <table class="table table-bordered text-center">
+        <thead class="table-dark">
+            <tr>
+                <th>Dictionary Type</th>
+                <th>Accuracy (%)</th>
+                <th>Precision (%)</th>
+                <th>Recall (%)</th>
+                <th>F1-Score (%)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in results %}
+            <tr>
+                <td><strong>{{ r.dictionary }}</strong></td>
+                <td>{{ r.accuracy|floatformat:2 }}</td>
+                <td>{{ r.precision|floatformat:2 }}</td>
+                <td>{{ r.recall|floatformat:2 }}</td>
+                <td>{{ r.f1_score|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <hr>
+
+    <h5 class="mt-4">Accuracy Comparison</h5>
+    <canvas id="accuracyChart" height="100"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const labels = [
+    {% for r in results %}
+        "{{ r.dictionary }}",
+    {% endfor %}
+];
+
+const accuracyData = [
+    {% for r in results %}
+        {{ r.accuracy }},
+    {% endfor %}
+];
+
+new Chart(document.getElementById('accuracyChart'), {
+    type: 'bar',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'Accuracy (%)',
+            data: accuracyData
+        }]
+    },
+    options: {
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 100
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

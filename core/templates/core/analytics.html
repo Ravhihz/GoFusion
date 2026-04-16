@@ -1,0 +1,487 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Analytics - GoFusion{% endblock %}
+
+{% block extra_css %}
+<style>
+.analytics-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.page-header-analytics {
+    background: linear-gradient(135deg, #003d82 0%, #0066cc 100%);
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    color: white;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 30px rgba(0, 61, 130, 0.3);
+}
+
+.page-header-analytics h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+}
+
+.page-header-analytics p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 0.95rem;
+}
+
+.stat-card-analytics {
+    background: white;
+    border-radius: 12px;
+    padding: 1.2rem;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.stat-card-analytics:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.stat-card-analytics.primary {
+    background: linear-gradient(135deg, #003d82 0%, #0066cc 100%);
+    color: white;
+}
+
+.stat-card-analytics.success {
+    background: linear-gradient(135deg, #28a745 0%, #38ef7d 100%);
+    color: white;
+}
+
+.stat-card-analytics.info {
+    background: linear-gradient(135deg, #0066cc 0%, #4facfe 100%);
+    color: white;
+}
+
+.stat-card-analytics.warning {
+    background: linear-gradient(135deg, #fdb714 0%, #ffd700 100%);
+    color: #856404;
+}
+
+.stat-card-analytics h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+}
+
+.stat-card-analytics p {
+    margin: 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.chart-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    height: 100%;
+}
+
+.chart-card-header {
+    padding: 1rem 1.5rem;
+    color: white;
+    border: none;
+}
+
+.chart-card-header.primary {
+    background: linear-gradient(135deg, #003d82 0%, #0066cc 100%);
+}
+
+.chart-card-header.success {
+    background: linear-gradient(135deg, #28a745 0%, #38ef7d 100%);
+}
+
+.chart-card-header.info {
+    background: linear-gradient(135deg, #0066cc 0%, #4facfe 100%);
+}
+
+.chart-card-header.warning {
+    background: linear-gradient(135deg, #fdb714 0%, #ffd700 100%);
+    color: #856404;
+}
+
+.chart-card-header.secondary {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+}
+
+.chart-card-header h5 {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.chart-card-body {
+    padding: 1.5rem;
+}
+
+.stat-list {
+    margin-top: 1rem;
+}
+
+.stat-list-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid #f0f2f5;
+}
+
+.stat-list-item:last-child {
+    border-bottom: none;
+}
+
+.btn-analytics {
+    background: white;
+    color: #003d82;
+    border: 2px solid #003d82;
+    font-weight: 600;
+    border-radius: 10px;
+    padding: 0.7rem 1.3rem;
+    transition: all 0.3s ease;
+}
+
+.btn-analytics:hover {
+    background: #003d82;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.btn-analytics i {
+    color: #fdb714;
+}
+
+.btn-back-analytics {
+    background: white;
+    border: 2px solid #e2e8f0;
+    color: #4a5568;
+    font-weight: 600;
+    border-radius: 10px;
+    padding: 0.7rem 1.3rem;
+}
+
+.btn-back-analytics:hover {
+    border-color: #003d82;
+    color: #003d82;
+}
+
+.table-analytics {
+    font-size: 0.9rem;
+}
+
+.table-analytics thead {
+    background: #f7fafc;
+    font-weight: 700;
+    color: #2d3748;
+}
+
+.table-analytics tbody tr {
+    transition: all 0.2s ease;
+}
+
+.table-analytics tbody tr:hover {
+    background: rgba(0, 61, 130, 0.03);
+}
+
+.quick-stats-section {
+    margin-bottom: 1.2rem;
+    padding-bottom: 1.2rem;
+    border-bottom: 2px solid #f0f2f5;
+}
+
+.quick-stats-section:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.quick-stats-section h6 {
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 0.8rem;
+    font-size: 0.95rem;
+}
+
+.quick-stat-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.4rem 0;
+    font-size: 0.9rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="py-3 analytics-container">
+    <div class="page-header-analytics">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1><i class="bi bi-bar-chart-line"></i> Analytics Dashboard</h1>
+                <p>Insights and visualizations from your sentiment analysis</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{% url 'core:dictionary_evaluation' %}" class="btn btn-analytics">
+                    <i class="bi bi-table"></i> Dictionary Evaluation
+                </a>
+                <a href="{% url 'core:home' %}" class="btn btn-back-analytics">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-3">
+            <div class="stat-card-analytics primary">
+                <h2>{{ total_tweets }}</h2>
+                <p>Total Tweets</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card-analytics success">
+                <h2>{{ labeled_tweets }}</h2>
+                <p>Labeled Tweets</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card-analytics info">
+                <h2>{{ total_models }}</h2>
+                <p>Trained Models</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card-analytics warning">
+                <h2>{{ total_predictions }}</h2>
+                <p>Predictions Made</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-6">
+            <div class="chart-card">
+                <div class="chart-card-header primary">
+                    <h5><i class="bi bi-pie-chart"></i> Sentiment Distribution</h5>
+                </div>
+                <div class="chart-card-body">
+                    <canvas id="sentimentPieChart"></canvas>
+                    <div class="stat-list">
+                        <div class="stat-list-item">
+                            <span><i class="bi bi-circle-fill text-success"></i> Positive</span>
+                            <strong>{{ positive_count }} ({{ positive_percent|floatformat:1 }}%)</strong>
+                        </div>
+                        <div class="stat-list-item">
+                            <span><i class="bi bi-circle-fill text-secondary"></i> Neutral</span>
+                            <strong>{{ neutral_count }} ({{ neutral_percent|floatformat:1 }}%)</strong>
+                        </div>
+                        <div class="stat-list-item">
+                            <span><i class="bi bi-circle-fill text-danger"></i> Negative</span>
+                            <strong>{{ negative_count }} ({{ negative_percent|floatformat:1 }}%)</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="chart-card">
+                <div class="chart-card-header success">
+                    <h5><i class="bi bi-graph-up"></i> Model Performance</h5>
+                </div>
+                <div class="chart-card-body">
+                    <canvas id="modelPerformanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-8">
+            <div class="chart-card">
+                <div class="chart-card-header info">
+                    <h5><i class="bi bi-table"></i> Dataset Overview</h5>
+                </div>
+                <div class="chart-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-analytics">
+                            <thead>
+                                <tr>
+                                    <th>Dataset</th>
+                                    <th>Total Tweets</th>
+                                    <th>Relevant</th>
+                                    <th>Sampled</th>
+                                    <th>Labeled</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for dataset in datasets %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'core:dataset_detail' dataset.id %}" style="color: #003d82; font-weight: 600;">
+                                            {{ dataset.name }}
+                                        </a>
+                                    </td>
+                                    <td>{{ dataset.total_tweets }}</td>
+                                    <td>{{ dataset.relevant_tweets }}</td>
+                                    <td>{{ dataset.sampled_tweets }}</td>
+                                    <td>{{ dataset.labeled_count }}</td>
+                                    <td>
+                                        {% if dataset.is_active %}
+                                        <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="chart-card">
+                <div class="chart-card-header warning">
+                    <h5><i class="bi bi-lightning"></i> Quick Stats</h5>
+                </div>
+                <div class="chart-card-body">
+                    <div class="quick-stats-section">
+                        <h6>Dictionary Size</h6>
+                        <div class="quick-stat-item">
+                            <span>Base Words:</span>
+                            <strong>{{ base_dict_count }}</strong>
+                        </div>
+                        <div class="quick-stat-item">
+                            <span>Extended Words:</span>
+                            <strong>{{ extended_dict_count }}</strong>
+                        </div>
+                        <div class="quick-stat-item">
+                            <span>Total:</span>
+                            <strong>{{ total_dict_words }}</strong>
+                        </div>
+                    </div>
+                    
+                    <div class="quick-stats-section">
+                        <h6>Training Statistics</h6>
+                        <div class="quick-stat-item">
+                            <span>Avg Train Accuracy:</span>
+                            <strong>{{ avg_train_accuracy|floatformat:2 }}%</strong>
+                        </div>
+                        <div class="quick-stat-item">
+                            <span>Avg Test Accuracy:</span>
+                            <strong>{{ avg_test_accuracy|floatformat:2 }}%</strong>
+                        </div>
+                        <div class="quick-stat-item">
+                            <span>Best Model:</span>
+                            <strong>{{ best_model_name|truncatechars:20 }}</strong>
+                        </div>
+                    </div>
+                    
+                    <div class="quick-stats-section">
+                        <h6>System Info</h6>
+                        <div class="quick-stat-item">
+                            <span>Active Models:</span>
+                            <strong>{{ active_models }}</strong>
+                        </div>
+                        <div class="quick-stat-item">
+                            <span>Total Predictions:</span>
+                            <strong>{{ total_predictions }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- <div class="chart-card">
+        <div class="chart-card-header secondary">
+            <h5><i class="bi bi-clock-history"></i> Prediction Timeline</h5>
+        </div>
+        <div class="chart-card-body">
+            <canvas id="predictionTimelineChart" height="80"></canvas>
+        </div>
+    </div> -->
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+new Chart(document.getElementById('sentimentPieChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Positive', 'Neutral', 'Negative'],
+        datasets: [{
+            data: [{{ positive_count }}, {{ neutral_count }}, {{ negative_count }}],
+            backgroundColor: ['#28a745', '#6c757d', '#dc3545']
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+new Chart(document.getElementById('modelPerformanceChart'), {
+    type: 'bar',
+    data: {
+        labels: [{% for model in recent_models %}'{{ model.name|truncatechars:15 }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+        datasets: [{
+            label: 'Train Accuracy',
+            data: [{% for model in recent_models %}{{ model.train_accuracy }}{% if not forloop.last %},{% endif %}{% endfor %}],
+            backgroundColor: 'rgba(0, 61, 130, 0.6)'
+        }, {
+            label: 'Test Accuracy',
+            data: [{% for model in recent_models %}{{ model.test_accuracy }}{% if not forloop.last %},{% endif %}{% endfor %}],
+            backgroundColor: 'rgba(0, 102, 204, 0.6)'
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 100
+            }
+        }
+    }
+});
+
+new Chart(document.getElementById('predictionTimelineChart'), {
+    type: 'line',
+    data: {
+        labels: {{ prediction_dates|safe }},
+        datasets: [{
+            label: 'Predictions per Day',
+            data: {{ prediction_counts|safe }},
+            borderColor: 'rgba(253, 183, 20, 1)',
+            backgroundColor: 'rgba(253, 183, 20, 0.2)',
+            fill: true,
+            tension: 0.4
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

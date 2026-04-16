@@ -1,0 +1,664 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Sentiment Dictionary - GoFusion{% endblock %}
+
+{% block extra_css %}
+<style>
+.dictionary-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.page-header-dict {
+    background: linear-gradient(135deg, #003d82 0%, #0066cc 100%);
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    color: white;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 30px rgba(0, 61, 130, 0.3);
+}
+
+.page-header-dict h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+}
+
+.page-header-dict p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 0.95rem;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.2rem;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.stat-card.primary {
+    border-color: #003d82;
+}
+
+.stat-card.warning {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+}
+
+.stat-card.success {
+    border-color: #28a745;
+}
+
+.stat-card.info {
+    background: linear-gradient(135deg, #003d82 0%, #0066cc 100%);
+    color: white;
+}
+
+.stat-card h3 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+}
+
+.stat-card.primary h3 { color: #003d82; }
+.stat-card.success h3 { color: #28a745; }
+
+.stat-card p {
+    margin: 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.filter-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.2rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.form-label {
+    font-weight: 600;
+    color: #2d3748;
+    font-size: 0.9rem;
+    margin-bottom: 0.4rem;
+}
+
+.form-control, .form-select {
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.9rem;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #003d82;
+    box-shadow: 0 0 0 0.2rem rgba(0, 61, 130, 0.15);
+}
+
+.btn-filter {
+    background: linear-gradient(135deg, #003d82 0%, #0066cc 100%);
+    border: none;
+    color: white;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 0.6rem 1.2rem;
+}
+
+.btn-filter:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 61, 130, 0.3);
+    color: white;
+}
+
+.btn-upload-dict {
+    background: white;
+    color: #003d82;
+    border: 2px solid #003d82;
+    font-weight: 600;
+    border-radius: 10px;
+    padding: 0.7rem 1.3rem;
+    transition: all 0.3s ease;
+}
+
+.btn-upload-dict:hover {
+    background: #003d82;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.btn-upload-dict i {
+    color: #fdb714;
+}
+
+.btn-back-dict {
+    background: white;
+    border: 2px solid #e2e8f0;
+    color: #4a5568;
+    font-weight: 600;
+    border-radius: 10px;
+    padding: 0.7rem 1.3rem;
+}
+
+.btn-back-dict:hover {
+    border-color: #003d82;
+    color: #003d82;
+}
+
+.nav-tabs {
+    border-bottom: 3px solid #e2e8f0;
+}
+
+.nav-tabs .nav-link {
+    border: none;
+    color: #4a5568;
+    font-weight: 600;
+    padding: 0.8rem 1.5rem;
+    border-radius: 10px 10px 0 0;
+    transition: all 0.3s ease;
+}
+
+.nav-tabs .nav-link:hover {
+    background: rgba(0, 61, 130, 0.05);
+    color: #003d82;
+}
+
+.nav-tabs .nav-link.active {
+    background: white;
+    color: #003d82;
+    border-bottom: 3px solid #003d82;
+}
+
+.dict-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+
+.dict-card-header {
+    padding: 1rem 1.5rem;
+    color: white;
+    border: none;
+}
+
+.dict-card-header.primary {
+    background: linear-gradient(135deg, #003d82 0%, #0066cc 100%);
+}
+
+.dict-card-header.warning {
+    background: linear-gradient(135deg, #fdb714 0%, #ffd700 100%);
+    color: #856404;
+}
+
+.dict-card-header.success {
+    background: linear-gradient(135deg, #28a745 0%, #38ef7d 100%);
+}
+
+.dict-card-header h5 {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.table {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.table thead {
+    background: #f7fafc;
+    font-weight: 700;
+    color: #2d3748;
+}
+
+.table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.table tbody tr:hover {
+    background: rgba(0, 61, 130, 0.03);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: #718096;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    color: #cbd5e0;
+    margin-bottom: 1rem;
+}
+
+.chart-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+
+.chart-card-header {
+    background: linear-gradient(135deg, #0066cc 0%, #4facfe 100%);
+    color: white;
+    padding: 1rem 1.5rem;
+}
+
+.chart-card-header h5 {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.chart-section h6 {
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+}
+
+.modal-header.primary {
+    background: linear-gradient(135deg, #003d82 0%, #0066cc 100%);
+    color: white;
+}
+
+.modal-header .btn-close-white {
+    filter: brightness(0) invert(1);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="py-3 dictionary-container">
+    <div class="page-header-dict">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1><i class="bi bi-book"></i> Sentiment Dictionary</h1>
+                <p>View base and extended sentiment words</p>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-upload-dict" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                    <i class="bi bi-upload"></i> Upload Dictionary
+                </button>
+                <a href="{% url 'core:home' %}" class="btn btn-back-dict">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card primary">
+                <h3>{{ base_count }}</h3>
+                <p>Base Words</p>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="stat-card warning">
+                <h3>{{ manual_count }}</h3>
+                <p>Manual Words</p>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="stat-card success">
+                <h3>{{ extended_count }}</h3>
+                <p>Extended Words</p>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="stat-card info">
+                <h3>{{ total_count }}</h3>
+                <p>Total Words</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="filter-card mb-3">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Word Type</label>
+                <select name="type" class="form-select">
+                    <option value="">All Types</option>
+                    <option value="base" {% if request.GET.type == 'base' %}selected{% endif %}>Base Only</option>
+                    <option value="extended" {% if request.GET.type == 'extended' %}selected{% endif %}>Extended Only</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Polarity</label>
+                <select name="polarity" class="form-select">
+                    <option value="">All Polarities</option>
+                    <option value="positive" {% if request.GET.polarity == 'positive' %}selected{% endif %}>Positive</option>
+                    <option value="negative" {% if request.GET.polarity == 'negative' %}selected{% endif %}>Negative</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Search Word</label>
+                <input type="text" name="search" class="form-control" 
+                       placeholder="Search..." value="{{ request.GET.search }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">&nbsp;</label>
+                <button type="submit" class="btn btn-filter w-100">
+                    <i class="bi bi-search"></i> Filter
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <ul class="nav nav-tabs mb-3" id="dictionaryTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="base-tab" data-bs-toggle="tab"
+                    data-bs-target="#base" type="button" role="tab">
+                <i class="bi bi-book"></i>
+                Base Dictionary ({{ base_count }})
+            </button>
+        </li>
+
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="manual-tab" data-bs-toggle="tab"
+                    data-bs-target="#manual" type="button" role="tab">
+                <i class="bi bi-pencil-square"></i>
+                Manual Dictionary ({{ manual_count }})
+            </button>
+        </li>
+
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="extended-tab" data-bs-toggle="tab"
+                    data-bs-target="#extended" type="button" role="tab">
+                <i class="bi bi-book-half"></i>
+                Extended Dictionary ({{ extended_count }})
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="dictionaryTabContent">
+        <div class="tab-pane fade show active" id="base" role="tabpanel">
+            <div class="dict-card">
+                <div class="dict-card-header primary">
+                    <h5>Base Sentiment Dictionary</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Word</th>
+                                <th>Weight</th>
+                                <th>Polarity</th>
+                                <th>Source</th>
+                                <th>Added At</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for word in base_words %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td><strong>{{ word.word }}</strong></td>
+                                <td>{{ word.weight|floatformat:2 }}</td>
+                                <td>
+                                    {% if word.polarity == 'positive' %}
+                                    <span class="badge bg-success">Positive</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Negative</span>
+                                    {% endif %}
+                                </td>
+                                <td><small>{{ word.source }}</small></td>
+                                <td><small>{{ word.added_at|date:"Y-m-d" }}</small></td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">
+                                    No base dictionary words found
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="manual" role="tabpanel">
+            <div class="dict-card">
+                <div class="dict-card-header warning">
+                    <h5>Manual Sentiment Dictionary</h5>
+                </div>
+                {% if manual_words %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Word</th>
+                                <th>Weight</th>
+                                <th>Polarity</th>
+                                <th>Added At</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for word in manual_words %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td><strong>{{ word.word }}</strong></td>
+                                <td>{{ word.weight|floatformat:2 }}</td>
+                                <td>
+                                    {% if word.polarity == 'positive' %}
+                                    <span class="badge bg-success">Positive</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Negative</span>
+                                    {% endif %}
+                                </td>
+                                <td><small>{{ word.added_at|date:"Y-m-d" }}</small></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-inbox"></i>
+                    <p class="mt-3">Manual dictionary is empty</p>
+                    <p class="small">Upload manual dictionary to compare performance</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="extended" role="tabpanel">
+            <div class="dict-card">
+                <div class="dict-card-header success">
+                    <h5>Extended Sentiment Dictionary</h5>
+                </div>
+                {% if extended_words %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Word</th>
+                                <th>Reference Word</th>
+                                <th>Similarity</th>
+                                <th>Polarity</th>
+                                <th>Added At</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for word in extended_words %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td><strong>{{ word.word }}</strong></td>
+                                <td><span class="badge bg-info">{{ word.reference_word }}</span></td>
+                                <td>{{ word.similarity_score|floatformat:4 }}</td>
+                                <td>
+                                    {% if word.polarity == 'positive' %}
+                                    <span class="badge bg-success">Positive</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Negative</span>
+                                    {% endif %}
+                                </td>
+                                <td><small>{{ word.added_at|date:"Y-m-d" }}</small></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-inbox"></i>
+                    <p class="mt-3">No extended dictionary yet</p>
+                    <p class="small">Generated automatically after training</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="chart-card mt-3">
+        <div class="chart-card-header">
+            <h5><i class="bi bi-pie-chart"></i> Polarity Distribution</h5>
+        </div>
+        <div class="p-3">
+            <div class="row g-3">
+                <div class="col-md-4 chart-section">
+                    <h6>Base Dictionary</h6>
+                    <canvas id="baseChart"></canvas>
+                </div>
+
+                <div class="col-md-4 chart-section">
+                    <h6>Manual Dictionary</h6>
+                    <canvas id="manualChart"></canvas>
+                </div>
+
+                <div class="col-md-4 chart-section">
+                    <h6>Extended Dictionary</h6>
+                    <canvas id="extendedChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="uploadModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header primary">
+                <h5 class="modal-title">
+                    <i class="bi bi-upload"></i> Upload Sentiment Dictionary
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'core:upload_dictionary' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <strong><i class="bi bi-info-circle"></i> Required Format:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>File type: CSV or Excel (.xlsx, .xls)</li>
+                            <li>Required columns: <code>word</code>, <code>weight</code>, <code>polarity</code></li>
+                            <li>Example:
+                                <pre class="mt-2 mb-0 p-2 bg-light border rounded" style="font-size: 0.85rem;">word,weight,polarity
+bagus,0.8,positive
+jelek,-0.7,negative
+senang,0.9,positive</pre>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Select Dictionary File</strong></label>
+                        <input type="file" class="form-control" name="file" accept=".csv,.xlsx,.xls" required>
+                        <small class="text-muted">Upload CSV or Excel file with sentiment words</small>
+                    </div>
+                    
+                    <div class="alert alert-info mb-0">
+                        <i class="bi bi-info-circle"></i>
+                        Uploaded file will be saved as <strong>Manual Dictionary</strong>  
+                        and will <strong>NOT affect</strong> the Base (TSV) Dictionary.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x"></i> Cancel
+                    </button>
+                    <button type="submit" class="btn btn-filter">
+                        <i class="bi bi-upload"></i> Upload Dictionary
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+new Chart(document.getElementById('baseChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Positive', 'Negative'],
+        datasets: [{
+            data: [{{ base_positive }}, {{ base_negative }}],
+            backgroundColor: ['#28a745', '#dc3545']
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { position: 'bottom' }
+        }
+    }
+});
+
+{% if extended_count > 0 %}
+new Chart(document.getElementById('extendedChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Positive', 'Negative'],
+        datasets: [{
+            data: [{{ extended_positive }}, {{ extended_negative }}],
+            backgroundColor: ['#28a745', '#dc3545']
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { position: 'bottom' }
+        }
+    }
+});
+{% endif %}
+
+{% if manual_count > 0 %}
+new Chart(document.getElementById('manualChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Positive', 'Negative'],
+        datasets: [{
+            data: [{{ manual_positive }}, {{ manual_negative }}],
+            backgroundColor: ['#28a745', '#dc3545']
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { position: 'bottom' }
+        }
+    }
+});
+{% endif %}
+</script>
+{% endblock %}

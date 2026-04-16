@@ -1,0 +1,441 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}GoFusion - Fusion Sentiment Analysis{% endblock %}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #003d82 0%, #0066cc 100%);
+            --accent-gradient: linear-gradient(135deg, #fdb714 0%, #ffd700 100%);
+            --sidebar-bg: #f8f9fa;
+            --sidebar-hover: #e9ecef;
+            --primary-blue: #003d82;
+            --secondary-blue: #0066cc;
+            --accent-gold: #fdb714;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .navbar {
+            background: var(--primary-gradient) !important;
+            box-shadow: 0 4px 20px rgba(0, 61, 130, 0.3);
+            padding: 1rem 0;
+        }
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-link {
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            padding: 0.5rem 1rem !important;
+        }
+
+        .navbar .nav-link:hover {
+            background: rgba(253, 183, 20, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .dropdown-menu {
+            border: none;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+            border-radius: 12px;
+            padding: 0.5rem;
+        }
+
+        .dropdown-item {
+            border-radius: 8px;
+            padding: 0.7rem 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .dropdown-item:hover {
+            background: var(--primary-gradient);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .sidebar {
+            background: white;
+            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.05);
+            min-height: calc(100vh - 56px);
+            padding: 1.5rem 0;
+        }
+
+        .sidebar .nav-link {
+            color: #4a5568;
+            padding: 0.8rem 1.5rem;
+            margin: 0.2rem 0.8rem;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+        }
+
+        .sidebar .nav-link:hover {
+            background: linear-gradient(135deg, rgba(0, 61, 130, 0.1) 0%, rgba(0, 102, 204, 0.1) 100%);
+            color: var(--primary-blue);
+            transform: translateX(5px);
+        }
+
+        .sidebar .nav-link.active {
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 61, 130, 0.3);
+        }
+
+        .sidebar .nav-link i {
+            font-size: 1.1rem;
+            color: var(--accent-gold);
+        }
+
+        .sidebar .nav-link.active i {
+            color: var(--accent-gold);
+        }
+
+        .sidebar-heading {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+            padding: 1rem 1.5rem 0.5rem;
+            color: var(--primary-blue);
+        }
+
+        .sidebar .nav-item.ms-3 .nav-link {
+            font-size: 0.9rem;
+            padding: 0.6rem 1.5rem;
+            color: #718096;
+        }
+
+        main {
+            flex: 1;
+            padding: 2rem;
+        }
+
+        .alert {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 1rem 1.5rem;
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            color: #155724;
+        }
+
+        .alert-info {
+            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+            color: #0c5460;
+        }
+
+        .alert-warning {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            color: #856404;
+        }
+
+        .alert-danger {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            color: #721c24;
+        }
+
+        .footer {
+            background: white;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+            margin-top: auto;
+        }
+
+        .text-primary {
+            color: var(--primary-blue) !important;
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-gradient);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-gradient);
+        }
+
+        @media (max-width: 768px) {
+            main {
+                padding: 1rem;
+            }
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'core:home' %}">
+                <i class="bi bi-diagram-3-fill"></i> GoFusion
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'core:home' %}">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-database"></i> Data
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item" href="{% url 'core:dataset_list' %}">
+                                    <i class="bi bi-table"></i> Dataset Management
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'core:upload_dataset' %}">
+                                    <i class="bi bi-upload"></i> Upload Dataset
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'core:dictionary' %}">
+                            <i class="bi bi-book"></i> Dictionary
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'core:models_list' %}">
+                            <i class="bi bi-cpu"></i> Models
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'core:prediction_page' %}">
+                            <i class="bi bi-magic"></i> Prediction
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'core:analytics' %}">
+                            <i class="bi bi-bar-chart"></i> Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/" target="_blank">
+                            <i class="bi bi-gear"></i> Admin
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <aside class="col-md-2 d-none d-md-block sidebar">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'core:home' %}">
+                                <i class="bi bi-speedometer2"></i>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'core:dataset_list' %}">
+                                <i class="bi bi-table"></i>
+                                <span>Datasets</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'core:upload_dataset' %}">
+                                <i class="bi bi-upload"></i>
+                                <span>Upload Data</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'core:dictionary' %}">
+                                <i class="bi bi-book"></i>
+                                <span>Dictionary</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'core:models_list' %}">
+                                <i class="bi bi-cpu"></i>
+                                <span>Models</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'core:prediction_page' %}">
+                                <i class="bi bi-magic"></i>
+                                <span>Prediction</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'core:analytics' %}">
+                                <i class="bi bi-bar-chart"></i>
+                                <span>Analytics</span>
+                            </a>
+                        </li>
+                    </ul>
+
+                    {% if dataset %}
+                    <hr class="my-3">
+                    <h6 class="sidebar-heading">
+                        <i class="bi bi-diagram-3"></i> Workflow
+                    </h6>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'core:preprocess_dataset' dataset.id %}">
+                                <i class="bi bi-filter-circle"></i>
+                                <span>Preprocessing</span>
+                            </a>
+                        </li>
+                        <li class="nav-item ms-3">
+                            <a class="nav-link" href="{% url 'core:preprocessing_visualizer' dataset.id %}">
+                                <i class="bi bi-eye"></i>
+                                <span>Preview Steps</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'core:preliminary_check' dataset.id %}">
+                                <i class="bi bi-check-circle"></i>
+                                <span>Preliminary Check</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'core:sampling' dataset.id %}">
+                                <i class="bi bi-shuffle"></i>
+                                <span>Sampling</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'core:labeling' dataset.id %}">
+                                <i class="bi bi-tags"></i>
+                                <span>Labeling</span>
+                            </a>
+                        </li>
+                        <li class="nav-item ms-3">
+                            <a class="nav-link" href="{% url 'core:labeled_tweets_list' dataset.id %}">
+                                <i class="bi bi-list-check"></i>
+                                <span>View Labeled</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'core:training_dashboard' dataset.id %}">
+                                <i class="bi bi-lightning-charge"></i>
+                                <span>Training</span>
+                            </a>
+                        </li>
+                        <li class="nav-item ms-3">
+                            <a class="nav-link" href="{% url 'core:feature_viewer' dataset.id %}">
+                                <i class="bi bi-diagram-3"></i>
+                                <span>View Features</span>
+                            </a>
+                        </li>
+                    </ul>
+                    {% endif %}
+                </div>
+            </aside>
+
+            <main class="col-md-10 ms-sm-auto">
+                {% if messages %}
+                <div class="messages-container">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {% if message.tags == 'success' %}
+                            <i class="bi bi-check-circle-fill"></i>
+                        {% elif message.tags == 'error' or message.tags == 'danger' %}
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                        {% elif message.tags == 'warning' %}
+                            <i class="bi bi-exclamation-circle-fill"></i>
+                        {% else %}
+                            <i class="bi bi-info-circle-fill"></i>
+                        {% endif %}
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <footer class="footer py-4">
+        <div class="container text-center">
+            <div class="d-flex justify-content-center align-items-center gap-3">
+                <span class="text-muted">
+                    <i class="bi bi-diagram-3-fill text-primary"></i>
+                    <strong>GoFusion</strong> - Fusion Sentiment Analysis
+                </span>
+                <span class="text-muted">|</span>
+                <span class="text-muted">© 2025</span>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+    
+    <script>
+        // document.addEventListener('DOMContentLoaded', function() {
+        //     const alerts = document.querySelectorAll('.alert');
+        //     alerts.forEach(function(alert) {
+        //         setTimeout(function() {
+        //             const bsAlert = new bootstrap.Alert(alert);
+        //             bsAlert.close();
+        //         }, 5000);
+        //     });
+        // });
+
+        const currentPath = window.location.pathname;
+        const navLinks = document.querySelectorAll('.sidebar .nav-link');
+        navLinks.forEach(link => {
+            if (link.getAttribute('href') === currentPath) {
+                link.classList.add('active');
+            }
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

@@ -1,0 +1,344 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Labeled Tweets - {{ dataset.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.labeled-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.page-header-labeled {
+    background: linear-gradient(135deg, #28a745 0%, #38ef7d 100%);
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    color: white;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 30px rgba(40, 167, 69, 0.3);
+}
+
+.page-header-labeled h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.stat-box-labeled {
+    background: white;
+    border-radius: 12px;
+    padding: 1.2rem;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+}
+
+.stat-box-labeled:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.stat-box-labeled.positive {
+    background: linear-gradient(135deg, #28a745 0%, #38ef7d 100%);
+    color: white;
+}
+
+.stat-box-labeled.neutral {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    color: white;
+}
+
+.stat-box-labeled.negative {
+    background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+    color: white;
+}
+
+.stat-box-labeled h3 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+}
+
+.stat-box-labeled p {
+    margin: 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.filter-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    border: none;
+    margin-bottom: 1.5rem;
+}
+
+.btn-filter {
+    flex: 1;
+    padding: 0.8rem 1rem;
+    font-weight: 600;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    border: 2px solid #e2e8f0;
+}
+
+.btn-filter:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-filter.active {
+    border-color: #003d82;
+    background: linear-gradient(135deg, #003d82 0%, #0066cc 100%);
+    color: white;
+}
+
+.btn-filter i {
+    font-size: 1.1rem;
+}
+
+.tweets-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    border: none;
+}
+
+.tweet-item {
+    border: none;
+    border-bottom: 1px solid #f0f2f5;
+    border-radius: 0;
+    padding: 1.2rem 1.5rem;
+    transition: all 0.2s ease;
+}
+
+.tweet-item:hover {
+    background: rgba(0, 61, 130, 0.03);
+}
+
+.tweet-item:last-child {
+    border-bottom: none;
+}
+
+.sentiment-badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.sentiment-badge.positive {
+    background: linear-gradient(135deg, #28a745 0%, #38ef7d 100%);
+    color: white;
+}
+
+.sentiment-badge.neutral {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    color: white;
+}
+
+.sentiment-badge.negative {
+    background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+    color: white;
+}
+
+.tweet-text {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #2d3748;
+}
+
+.btn-back-labeled {
+    background: white;
+    color: #28a745;
+    border: 2px solid rgba(40, 167, 69, 0.3);
+    font-weight: 600;
+    border-radius: 10px;
+    padding: 0.7rem 1.3rem;
+}
+
+.btn-back-labeled:hover {
+    background: rgba(255, 255, 255, 0.9);
+    transform: translateY(-2px);
+    color: #28a745;
+}
+
+.btn-export-labeled {
+    background: white;
+    color: #fdb714;
+    border: 2px solid rgba(253, 183, 20, 0.3);
+    font-weight: 600;
+    border-radius: 10px;
+    padding: 0.7rem 1.3rem;
+    margin-right: 0.5rem;
+}
+
+.btn-export-labeled:hover {
+    background: rgba(255, 255, 255, 0.9);
+    transform: translateY(-2px);
+    color: #fdb714;
+}
+
+.btn-back-labeled i,
+.btn-export-labeled i {
+    color: inherit;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    color: #cbd5e0;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="py-3 labeled-container">
+    <div class="page-header-labeled">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1><i class="bi bi-list-check"></i> Labeled Tweets</h1>
+            <div class="d-flex gap-2">
+                <a href="{% url 'core:export_labeled_tweets' dataset.id %}" 
+                   class="btn btn-export-labeled">
+                    <i class="bi bi-download"></i> Export CSV
+                </a>
+                <a href="{% url 'core:dataset_detail' dataset.id %}" 
+                   class="btn btn-back-labeled">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-3">
+            <div class="stat-box-labeled">
+                <h3 class="text-primary">{{ total }}</h3>
+                <p>Total Labeled</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-box-labeled positive">
+                <h3 id="positiveCount">{{ labeled_tweets|length|default:0 }}</h3>
+                <p>Positive</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-box-labeled neutral">
+                <h3 id="neutralCount">0</h3>
+                <p>Neutral</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-box-labeled negative">
+                <h3 id="negativeCount">0</h3>
+                <p>Negative</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="filter-card">
+        <div class="card-body">
+            <div class="d-flex gap-2 flex-wrap">
+                <button type="button" class="btn btn-filter active" onclick="filterSentiment('all')">
+                    <i class="bi bi-list"></i> All
+                </button>
+                <button type="button" class="btn btn-filter" onclick="filterSentiment('positive')">
+                    <i class="bi bi-emoji-smile"></i> Positive
+                </button>
+                <button type="button" class="btn btn-filter" onclick="filterSentiment('neutral')">
+                    <i class="bi bi-emoji-neutral"></i> Neutral
+                </button>
+                <button type="button" class="btn btn-filter" onclick="filterSentiment('negative')">
+                    <i class="bi bi-emoji-frown"></i> Negative
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="tweets-card">
+        <div class="card-body p-0">
+            {% if labeled_tweets %}
+            <div class="list-group list-group-flush">
+                {% for label in labeled_tweets %}
+                <div class="list-group-item tweet-item" data-sentiment="{{ label.sentiment }}">
+                    <div class="d-flex w-100 justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="sentiment-badge 
+                                    {% if label.sentiment == 'positive' %}positive
+                                    {% elif label.sentiment == 'negative' %}negative
+                                    {% else %}neutral{% endif %} me-2">
+                                    {% if label.sentiment == 'positive' %}
+                                    <i class="bi bi-emoji-smile"></i> Positive
+                                    {% elif label.sentiment == 'negative' %}
+                                    <i class="bi bi-emoji-frown"></i> Negative
+                                    {% else %}
+                                    <i class="bi bi-emoji-neutral"></i> Neutral
+                                    {% endif %}
+                                </span>
+                                <small class="text-muted">
+                                    <i class="bi bi-person"></i> {{ label.tweet.username|default:"Unknown" }} • 
+                                    {{ label.labeled_at|date:"Y-m-d H:i" }}
+                                </small>
+                            </div>
+                            <p class="tweet-text mb-0">{{ label.tweet.text }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="bi bi-inbox"></i>
+                <p class="text-muted mt-3">No labeled tweets yet</p>
+                <a href="{% url 'core:labeling' dataset.id %}" class="btn btn-primary">
+                    Start Labeling
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const items = document.querySelectorAll('.tweet-item');
+    let positive = 0, neutral = 0, negative = 0;
+    
+    items.forEach(item => {
+        const sentiment = item.dataset.sentiment;
+        if (sentiment === 'positive') positive++;
+        else if (sentiment === 'neutral') neutral++;
+        else if (sentiment === 'negative') negative++;
+    });
+    
+    document.getElementById('positiveCount').textContent = positive;
+    document.getElementById('neutralCount').textContent = neutral;
+    document.getElementById('negativeCount').textContent = negative;
+});
+
+function filterSentiment(sentiment) {
+    const items = document.querySelectorAll('.tweet-item');
+    const buttons = document.querySelectorAll('.btn-filter');
+    
+    buttons.forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    items.forEach(item => {
+        if (sentiment === 'all' || item.dataset.sentiment === sentiment) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+</script>
+{% endblock %}

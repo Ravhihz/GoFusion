@@ -1,0 +1,450 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dataset: {{ dataset.name }} - GoFusion{% endblock %}
+
+{% block extra_css %}
+<style>
+.dataset-detail-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.page-header-detail {
+    background: linear-gradient(135deg, #003d82 0%, #0066cc 100%);
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    color: white;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 30px rgba(0, 61, 130, 0.3);
+}
+
+.page-header-detail h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.detail-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+.detail-card-header {
+    padding: 1rem 1.5rem;
+    color: white;
+    border: none;
+}
+
+.detail-card-header.primary {
+    background: linear-gradient(135deg, #003d82 0%, #0066cc 100%);
+}
+
+.detail-card-header.info {
+    background: linear-gradient(135deg, #0066cc 0%, #4facfe 100%);
+}
+
+.detail-card-header.success {
+    background: linear-gradient(135deg, #28a745 0%, #38ef7d 100%);
+}
+
+.detail-card-header h5 {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.info-table {
+    font-size: 0.95rem;
+}
+
+.info-table th {
+    font-weight: 700;
+    color: #2d3748;
+    padding: 0.8rem;
+}
+
+.info-table td {
+    padding: 0.8rem;
+}
+
+.stat-mini-card {
+    background: white;
+    border-radius: 10px;
+    padding: 1rem;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.stat-mini-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.stat-mini-card h3 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+}
+
+.stat-mini-card p {
+    font-size: 0.85rem;
+    margin: 0;
+    color: #6c757d;
+}
+
+.workflow-btn {
+    padding: 0.8rem 1.2rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.workflow-btn:hover:not(:disabled) {
+    transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.workflow-btn i {
+    color: #fdb714;
+}
+
+.preliminary-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+.preliminary-stat-box {
+    padding: 1rem;
+    border-radius: 10px;
+    border: 2px solid;
+}
+
+.progress-modern {
+    height: 25px;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.btn-back-detail {
+    background: white;
+    color: #003d82;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    font-weight: 600;
+    border-radius: 10px;
+    padding: 0.7rem 1.3rem;
+}
+
+.btn-back-detail:hover {
+    background: rgba(255, 255, 255, 0.9);
+    transform: translateY(-2px);
+}
+
+.btn-back-detail i {
+    color: #fdb714;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="py-3 dataset-detail-container">
+    <div class="page-header-detail">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1><i class="bi bi-eye"></i> Dataset: {{ dataset.name }}</h1>
+            <a href="{% url 'core:dataset_list' %}" class="btn btn-back-detail">
+                <i class="bi bi-arrow-left"></i> Back to List
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-8">
+            <div class="detail-card">
+                <div class="detail-card-header primary">
+                    <h5><i class="bi bi-info-circle"></i> Dataset Information</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless info-table">
+                        <tr>
+                            <th width="200">Name:</th>
+                            <td><strong>{{ dataset.name }}</strong></td>
+                        </tr>
+                        <tr>
+                            <th>Description:</th>
+                            <td>{{ dataset.description|default:"No description" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Total Tweets:</th>
+                            <td><span class="badge" style="background: linear-gradient(135deg, #003d82 0%, #0066cc 100%);">{{ total_tweets }}</span></td>
+                        </tr>
+                        <tr>
+                            <th>Preprocessed:</th>
+                            <td>
+                                {% if preprocessed_count >= total_tweets %}
+                                <span class="badge bg-success">{{ preprocessed_count }} / {{ total_tweets }}</span>
+                                {% else %}
+                                <span class="badge bg-warning">{{ preprocessed_count }} / {{ total_tweets }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Uploaded At:</th>
+                            <td>{{ dataset.uploaded_at|date:"Y-m-d H:i:s" }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="detail-card">
+                <div class="detail-card-header info">
+                    <h5>
+                        <i class="bi bi-bar-chart"></i> Statistics
+                        {% if preliminary_done %}
+                        <span class="badge bg-success ms-2">Filtered: Relevant Only</span>
+                        {% endif %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <div class="stat-mini-card">
+                                <h3 class="text-primary">{{ total_tweets }}</h3>
+                                <p>
+                                    {% if preliminary_done %}
+                                    Relevant Tweets
+                                    {% else %}
+                                    Total Tweets
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-mini-card">
+                                <h3 class="text-success">{{ preprocessed_count }}</h3>
+                                <p>Preprocessed</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-mini-card">
+                                <h3 class="text-warning">{{ sampled_count }}</h3>
+                                <p>Sampled</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-mini-card">
+                                <h3 class="text-danger">{{ labeled_count }}</h3>
+                                <p>Labeled</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if preliminary_done %}
+            <div class="preliminary-card">
+                <div class="detail-card-header success">
+                    <h5>
+                        <i class="bi bi-funnel"></i> Preliminary Check Results
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-success mb-3">
+                        <i class="bi bi-info-circle"></i> 
+                        <strong>Data Filtered:</strong> The statistics above now show only the 
+                        <strong>{{ relevant_count }} relevant tweets</strong> from the preliminary check. 
+                        <strong>{{ not_relevant_count }} not relevant tweets</strong> have been excluded from further processing.
+                    </div>
+                    
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-3">
+                            <div class="preliminary-stat-box bg-light" style="border-color: #6c757d;">
+                                <h4 class="text-primary mb-0">{{ total_checked }}</h4>
+                                <small>Total Checked</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="preliminary-stat-box" style="background-color: #d4edda; border-color: #28a745;">
+                                <h4 class="text-success mb-0">{{ relevant_count }}</h4>
+                                <small>✓ Kept (Relevant)</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="preliminary-stat-box" style="background-color: #f8d7da; border-color: #dc3545;">
+                                <h4 class="text-danger mb-0">{{ not_relevant_count }}</h4>
+                                <small>✗ Excluded (Not Relevant)</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="preliminary-stat-box" style="background-color: #fff3cd; border-color: #fdb714;">
+                                <h4 class="text-warning mb-0">{{ duplicates_removed }}</h4>
+                                <small>Duplicates Removed</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span><strong>Relevance Rate:</strong></span>
+                            <span><strong>{{ relevance_percentage }}%</strong></span>
+                        </div>
+                        <div class="progress progress-modern">
+                            <div class="progress-bar bg-success" style="width: {{ relevance_percentage }}%;">
+                                {{ relevant_count }} kept
+                            </div>
+                            <div class="progress-bar bg-danger" style="width: {{ 100|add:'-'|add:relevance_percentage }}%;">
+                                {{ not_relevant_count }} excluded
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-4">
+            <div class="detail-card">
+                <div class="detail-card-header success">
+                    <h5><i class="bi bi-diagram-3"></i> Workflow</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        {% if can_preprocess %}
+                        <a href="{% url 'core:preprocess_dataset' dataset.id %}" class="btn btn-outline-primary workflow-btn">
+                            <span><i class="bi bi-filter"></i> 1. Preprocessing</span>
+                            {% if preprocessed_count < total_tweets %}
+                            <span class="badge bg-warning">Start</span>
+                            {% else %}
+                            <span class="badge bg-success">✓</span>
+                            {% endif %}
+                        </a>
+                        <a href="{% url 'core:preprocessing_visualizer' dataset.id %}" 
+                            class="btn btn-sm btn-outline-info w-100" 
+                            style="font-size: 0.85rem; margin-top: -0.5rem;">
+                                <i class="bi bi-eye"></i> Preview Steps
+                        </a>
+                        {% else %}
+                        <button class="btn btn-outline-secondary workflow-btn" disabled>
+                            <span><i class="bi bi-filter"></i> 1. Preprocessing</span>
+                            <span class="badge bg-secondary">No data</span>
+                        </button>
+                        {% endif %}
+
+                        {% if can_preliminary %}
+                        <a href="{% url 'core:preliminary_check' dataset.id %}" class="btn btn-outline-success workflow-btn">
+                            <span><i class="bi bi-check-circle"></i> 2. Preliminary Check</span>
+                            {% if relevant_count < 100 %}
+                            <span class="badge bg-warning">{{ relevant_count }}/100</span>
+                            {% else %}
+                            <span class="badge bg-success">✓</span>
+                            {% endif %}
+                        </a>
+                        {% else %}
+                        <button class="btn btn-outline-secondary workflow-btn" disabled>
+                            <span><i class="bi bi-check-circle"></i> 2. Preliminary Check</span>
+                            <span class="badge bg-secondary">Locked</span>
+                        </button>
+                        {% endif %}
+
+                        {% if can_sampling %}
+                        <a href="{% url 'core:sampling' dataset.id %}" class="btn btn-outline-warning workflow-btn">
+                            <span><i class="bi bi-shuffle"></i> 3. Sampling</span>
+                            {% if sampled_count > 0 %}
+                            <span class="badge bg-success">✓</span>
+                            {% else %}
+                            <span class="badge bg-warning">Start</span>
+                            {% endif %}
+                        </a>
+                        {% else %}
+                        <button class="btn btn-outline-secondary workflow-btn" disabled>
+                            <span><i class="bi bi-shuffle"></i> 3. Sampling</span>
+                            <span class="badge bg-secondary">Locked</span>
+                        </button>
+                        {% endif %}
+
+                        {% if can_labeling %}
+                        <a href="{% url 'core:labeling' dataset.id %}" class="btn btn-outline-danger workflow-btn">
+                            <span><i class="bi bi-tags"></i> 4. Labeling</span>
+                            <span class="badge bg-info">{{ labeled_count }}/{{ train_count }}</span>
+                        </a>
+                        {% else %}
+                        <button class="btn btn-outline-secondary workflow-btn" disabled>
+                            <span><i class="bi bi-tags"></i> 4. Labeling</span>
+                            <span class="badge bg-secondary">Locked</span>
+                        </button>
+                        {% endif %}
+
+                        {% if can_training %}
+                        <a href="{% url 'core:training_dashboard' dataset.id %}" class="btn btn-outline-info workflow-btn">
+                            <span><i class="bi bi-lightning"></i> 5. Training</span>
+                            {% if features_count > 0 %}
+                            <span class="badge bg-success">✓</span>
+                            {% else %}
+                            <span class="badge bg-warning">Start</span>
+                            {% endif %}
+                        </a>
+                        {% else %}
+                        <button class="btn btn-outline-secondary workflow-btn" disabled>
+                            <span><i class="bi bi-lightning"></i> 5. Training</span>
+                            <span class="badge bg-secondary">Locked</span>
+                        </button>
+                        {% endif %}
+
+                        <hr>
+
+                        {% if features_count > 0 %}
+                        <a href="{% url 'core:feature_viewer' dataset.id %}" class="btn btn-outline-primary workflow-btn">
+                            <span><i class="bi bi-graph-up"></i> View Features</span>
+                            <span class="badge bg-info">{{ features_count }}</span>
+                        </a>
+                        <small class="text-muted" style="font-size: 0.8rem; margin-top: -0.5rem; display: block;">
+                            <i class="bi bi-info-circle"></i> View sentiment scores, embeddings & PCA
+                        </small>
+                        {% endif %}
+
+                        {% if labeled_count > 0 %}
+                        <a href="{% url 'core:labeled_tweets_list' dataset.id %}" class="btn btn-sm btn-outline-success">
+                            <i class="bi bi-list-check"></i> View Labeled Tweets
+                        </a>
+                        {% endif %}
+
+                        {% if models_count > 0 %}
+                        <a href="{% url 'core:models_list' %}" class="btn btn-sm btn-outline-info">
+                            <i class="bi bi-cpu"></i> View Models ({{ models_count }})
+                        </a>
+                        {% endif %}
+                    </div>
+
+                    <div class="alert alert-info mt-3 mb-0">
+                        <small>
+                            <strong>Progress:</strong><br>
+                            {% if preprocessed_count < total_tweets %}
+                            → Start with Preprocessing
+                            {% elif relevant_count < 100 %}
+                            → Continue Preliminary Check
+                            {% elif sampled_count == 0 %}
+                            → Perform Sampling
+                            {% elif labeled_count < train_count %}
+                            → Label Training Data
+                            {% else %}
+                            → Ready for Training!
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

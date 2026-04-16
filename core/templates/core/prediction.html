@@ -1,0 +1,647 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Prediction - GoFusion{% endblock %}
+
+{% block extra_css %}
+<style>
+.prediction-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.page-header-prediction {
+    background: linear-gradient(135deg, #003d82 0%, #0066cc 100%);
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    color: white;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 30px rgba(0, 61, 130, 0.3);
+}
+
+.page-header-prediction h3 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+}
+
+.page-header-prediction p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 0.95rem;
+}
+
+.prediction-card {
+    transition: all 0.3s ease;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.prediction-card:hover {
+    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+    transform: translateY(-2px);
+}
+
+.stat-box {
+    padding: 1.2rem;
+    border-radius: 12px;
+    text-align: center;
+    color: white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.stat-box.positive { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); }
+.stat-box.neutral { background: linear-gradient(135deg, #6c757d 0%, #adb5bd 100%); }
+.stat-box.negative { background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%); }
+
+.stat-box h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+}
+
+.stat-box p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.result-box {
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-top: 1rem;
+}
+
+.result-box.positive {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    border: 2px solid #28a745;
+}
+
+.result-box.neutral {
+    background: linear-gradient(135deg, #e2e3e5 0%, #d6d8db 100%);
+    border: 2px solid #6c757d;
+}
+
+.result-box.negative {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    border: 2px solid #dc3545;
+}
+
+.confidence-bar {
+    height: 25px;
+    border-radius: 15px;
+    background: #e9ecef;
+    overflow: hidden;
+    position: relative;
+}
+
+.confidence-fill {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 0.85rem;
+    transition: width 0.5s ease;
+}
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.85);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(5px);
+}
+
+.loading-overlay.show {
+    display: flex;
+}
+
+.spinner-large {
+    width: 3.5rem;
+    height: 3.5rem;
+    border-color: #003d82;
+    border-right-color: transparent;
+}
+
+.btn-header-pred {
+    background: white;
+    color: #003d82;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    font-weight: 600;
+    border-radius: 10px;
+    padding: 0.6rem 1.2rem;
+    transition: all 0.3s ease;
+}
+
+.btn-header-pred:hover {
+    background: rgba(255, 255, 255, 0.9);
+    transform: translateY(-2px);
+}
+
+.btn-header-pred i {
+    color: #fdb714;
+}
+
+.card-header-pred {
+    padding: 1rem 1.5rem;
+    border: none;
+    color: white;
+}
+
+.card-header-pred.primary {
+    background: linear-gradient(135deg, #003d82 0%, #0066cc 100%);
+}
+
+.card-header-pred.success {
+    background: linear-gradient(135deg, #28a745 0%, #38ef7d 100%);
+}
+
+.card-header-pred.secondary {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+}
+
+.card-header-pred h5 {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.form-control, .form-select {
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 0.7rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #003d82;
+    box-shadow: 0 0 0 0.2rem rgba(0, 61, 130, 0.15);
+}
+
+.form-label {
+    font-weight: 600;
+    color: #2d3748;
+    font-size: 0.95rem;
+}
+
+.btn-predict {
+    background: linear-gradient(135deg, #003d82 0%, #0066cc 100%);
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 0.8rem;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.btn-predict:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 61, 130, 0.4);
+    color: white;
+}
+
+.btn-predict i {
+    color: #fdb714;
+}
+
+.table-prediction {
+    font-size: 0.9rem;
+}
+
+.table-prediction thead {
+    background: #f7fafc;
+    font-weight: 700;
+    color: #2d3748;
+}
+
+.table-prediction tbody tr {
+    transition: all 0.2s ease;
+}
+
+.table-prediction tbody tr:hover {
+    background: rgba(0, 61, 130, 0.03);
+}
+
+.alert-model-info {
+    border-radius: 12px;
+    border: none;
+    padding: 1.2rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="py-3 prediction-container">
+    
+    <div class="page-header-prediction">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h3><i class="bi bi-magic"></i> Sentiment Prediction</h3>
+                <p>Predict sentiment using trained SVM model</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{% url 'core:home' %}" class="btn btn-header-pred">
+                    <i class="bi bi-house"></i> Dashboard
+                </a>
+                <a href="{% url 'core:models_list' %}" class="btn btn-header-pred">
+                    <i class="bi bi-cpu"></i> Models
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="alert alert-model-info {% if active_model %}alert-info{% else %}alert-warning{% endif %} mb-3">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-info-circle me-2" style="font-size: 1.3rem;"></i>
+            <div class="flex-grow-1">
+                {% if active_model %}
+                    <strong>Active Model:</strong> {{ active_model.name }}
+                    <br>
+                    <small class="text-muted">
+                        Train Accuracy: {{ active_model.train_accuracy|floatformat:2 }}% | 
+                        Test Accuracy: {{ active_model.test_accuracy|floatformat:2 }}% |
+                        Trained: {{ active_model.trained_at|date:"Y-m-d H:i" }}
+                    </small>
+                {% else %}
+                    <strong>No Active Model</strong>
+                    <br>
+                    <small>Please train a model first before making predictions.</small>
+                {% endif %}
+            </div>
+            {% if active_model %}
+            <a href="{% url 'core:model_detail' active_model.id %}" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-eye"></i> View Details
+            </a>
+            {% else %}
+            <a href="{% url 'core:dataset_list' %}" class="btn btn-sm btn-warning">
+                <i class="bi bi-arrow-right"></i> Train Model
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-3">
+            <div class="stat-box positive">
+                <h2>{{ positive_count }}</h2>
+                <p><i class="bi bi-emoji-smile"></i> Positive</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-box neutral">
+                <h2>{{ neutral_count }}</h2>
+                <p><i class="bi bi-emoji-neutral"></i> Neutral</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-box negative">
+                <h2>{{ negative_count }}</h2>
+                <p><i class="bi bi-emoji-frown"></i> Negative</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100" style="border-radius: 12px;">
+                <div class="card-body text-center d-flex flex-column justify-content-center">
+                    <h2 class="mb-0" style="color: #003d82; font-weight: 700;">{{ total_predictions }}</h2>
+                    <p class="text-muted mb-0" style="font-size: 0.85rem; font-weight: 600;">Total Predictions</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        
+        <div class="col-lg-8">
+            <div class="card prediction-card">
+                <div class="card-header-pred primary">
+                    <h5><i class="bi bi-chat-dots"></i> Single Tweet Prediction</h5>
+                </div>
+                <div class="card-body">
+                    <form id="singlePredictionForm">
+                        <div class="mb-3">
+                            <label class="form-label">Enter Tweet Text</label>
+                            <textarea 
+                                class="form-control" 
+                                id="tweetText" 
+                                rows="4" 
+                                placeholder="Type or paste tweet text here..."
+                                required
+                                {% if not active_model %}disabled{% endif %}
+                            ></textarea>
+                            <small class="text-muted">Example: "Program makan bergizi gratis sangat membantu anak-anak"</small>
+                        </div>
+                        
+                        <button 
+                            type="submit" 
+                            class="btn btn-predict w-100"
+                            {% if not active_model %}disabled{% endif %}
+                        >
+                            <i class="bi bi-magic"></i> Predict Sentiment
+                        </button>
+                    </form>
+
+                    <div id="predictionResult" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card prediction-card">
+                <div class="card-header-pred success">
+                    <h5><i class="bi bi-database"></i> Dataset Prediction</h5>
+                </div>
+                <div class="card-body">
+                    <form id="datasetPredictionForm">
+                        <div class="mb-3">
+                            <label class="form-label">Select Dataset</label>
+                            <select 
+                                class="form-select" 
+                                id="datasetSelect"
+                                {% if not active_model %}disabled{% endif %}
+                            >
+                                <option value="">Choose dataset...</option>
+                                {% for dataset in datasets %}
+                                <option value="{{ dataset.id }}">
+                                    {{ dataset.name }} ({{ dataset.total_tweets }} tweets)
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <button 
+                            type="submit" 
+                            class="btn w-100"
+                            style="background: linear-gradient(135deg, #28a745 0%, #38ef7d 100%); color: white; font-weight: 600; border-radius: 10px; border: none;"
+                            {% if not active_model %}disabled{% endif %}
+                        >
+                            <i class="bi bi-play-fill"></i> Predict All Tweets
+                        </button>
+                    </form>
+
+                    <div id="datasetResult" class="mt-3" style="display: none;"></div>
+                </div>
+            </div>
+
+            <div class="card prediction-card mt-3">
+                <div class="card-header-pred secondary">
+                    <h5><i class="bi bi-download"></i> Export Predictions</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small mb-3">Export prediction results to CSV file</p>
+                    <a href="{% url 'core:export_predictions' %}" class="btn w-100" style="background: linear-gradient(135deg, #6c757d 0%, #495057 100%); color: white; font-weight: 600; border-radius: 10px; border: none;">
+                        <i class="bi bi-file-earmark-spreadsheet"></i> Download CSV
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if recent_predictions %}
+    <div class="card prediction-card">
+        <div class="card-header" style="background: #f7fafc; padding: 1rem 1.5rem;">
+            <h5 class="mb-0" style="font-weight: 700; font-size: 1.1rem; color: #2d3748;">
+                <i class="bi bi-clock-history"></i> Recent Predictions
+            </h5>
+        </div>
+        <div class="p-0">
+            <div class="table-responsive">
+                <table class="table table-prediction table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">#</th>
+                            <th>Tweet Text</th>
+                            <th style="width: 120px;">Sentiment</th>
+                            <th style="width: 120px;">Confidence</th>
+                            <th style="width: 150px;">Predicted At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pred in recent_predictions %}
+                        <tr>
+                            <td class="text-muted">{{ forloop.counter }}</td>
+                            <td>
+                                <div class="text-truncate" style="max-width: 500px;">
+                                    {{ pred.tweet.text }}
+                                </div>
+                            </td>
+                            <td>
+                                {% if pred.predicted_sentiment == 'positive' %}
+                                    <span class="badge bg-success">
+                                        <i class="bi bi-emoji-smile"></i> Positive
+                                    </span>
+                                {% elif pred.predicted_sentiment == 'negative' %}
+                                    <span class="badge bg-danger">
+                                        <i class="bi bi-emoji-frown"></i> Negative
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-secondary">
+                                        <i class="bi bi-emoji-neutral"></i> Neutral
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong>{{ pred.confidence_score|floatformat:1 }}%</strong>
+                            </td>
+                            <td class="text-muted">
+                                {{ pred.predicted_at|date:"Y-m-d H:i" }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+<div id="loadingOverlay" class="loading-overlay">
+    <div class="text-center">
+        <div class="spinner-border spinner-large text-light" role="status"></div>
+        <p class="text-white mt-3" style="font-size: 1.1rem; font-weight: 600;">Processing prediction...</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('singlePredictionForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const text = document.getElementById('tweetText').value.trim();
+    
+    if (!text) {
+        alert('Please enter tweet text');
+        return;
+    }
+    
+    document.getElementById('loadingOverlay').classList.add('show');
+    document.getElementById('predictionResult').style.display = 'none';
+    
+    fetch('{% url "core:predict_single_tweet" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ text: text })
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById('loadingOverlay').classList.remove('show');
+        
+        if (data.success) {
+            displayPredictionResult(data);
+        } else {
+            alert('Prediction failed: ' + data.message);
+        }
+    })
+    .catch(error => {
+        document.getElementById('loadingOverlay').classList.remove('show');
+        alert('Error: ' + error.message);
+    });
+});
+
+function displayPredictionResult(data) {
+    const sentiment = data.prediction.sentiment;
+    const confidence = data.prediction.confidence;
+    
+    let sentimentClass = 'neutral';
+    let sentimentIcon = 'emoji-neutral';
+    let sentimentText = 'Neutral';
+    let barColor = '#6c757d';
+    
+    if (sentiment === 'positive') {
+        sentimentClass = 'positive';
+        sentimentIcon = 'emoji-smile';
+        sentimentText = 'Positive';
+        barColor = '#28a745';
+    } else if (sentiment === 'negative') {
+        sentimentClass = 'negative';
+        sentimentIcon = 'emoji-frown';
+        sentimentText = 'Negative';
+        barColor = '#dc3545';
+    }
+    
+    const html = `
+        <div class="result-box ${sentimentClass}">
+            <div class="text-center mb-3">
+                <i class="bi bi-${sentimentIcon}" style="font-size: 3.5rem;"></i>
+                <h3 class="mt-2" style="font-size: 1.5rem;">${sentimentText} Sentiment</h3>
+            </div>
+            
+            <div class="mb-3">
+                <label class="fw-bold mb-2" style="font-size: 0.95rem;">Confidence Score</label>
+                <div class="confidence-bar">
+                    <div class="confidence-fill" style="width: ${confidence}%; background-color: ${barColor};">
+                        ${confidence.toFixed(1)}%
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row g-2">
+                <div class="col-4">
+                    <div class="card text-center">
+                        <div class="card-body py-2">
+                            <small class="text-muted">Sentiment</small>
+                            <div><strong>${data.features.sentiment_score.toFixed(4)}</strong></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="card text-center">
+                        <div class="card-body py-2">
+                            <small class="text-muted">Positive</small>
+                            <div><strong>${data.features.positive_score.toFixed(4)}</strong></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="card text-center">
+                        <div class="card-body py-2">
+                            <small class="text-muted">Negative</small>
+                            <div><strong>${data.features.negative_score.toFixed(4)}</strong></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-3">
+                <small class="text-muted">
+                    <i class="bi bi-info-circle"></i> 
+                    Processed ${data.preprocessing.token_count} tokens
+                </small>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('predictionResult').innerHTML = html;
+    document.getElementById('predictionResult').style.display = 'block';
+    document.getElementById('predictionResult').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+document.getElementById('datasetPredictionForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const datasetId = document.getElementById('datasetSelect').value;
+    
+    if (!datasetId) {
+        alert('Please select a dataset');
+        return;
+    }
+    
+    if (!confirm('Predict all tweets in this dataset? This may take a few minutes.')) {
+        return;
+    }
+    
+    document.getElementById('loadingOverlay').classList.add('show');
+    
+    fetch('{% url "core:predict_dataset" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ dataset_id: datasetId })
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById('loadingOverlay').classList.remove('show');
+        
+        if (data.success) {
+            const html = `
+                <div class="alert alert-success">
+                    <h6 class="mb-2"><i class="bi bi-check-circle"></i> Prediction Complete!</h6>
+                    <div class="small">
+                        <strong>Total:</strong> ${data.statistics.total}<br>
+                        <strong>Positive:</strong> ${data.statistics.positive}<br>
+                        <strong>Neutral:</strong> ${data.statistics.neutral}<br>
+                        <strong>Negative:</strong> ${data.statistics.negative}
+                    </div>
+                </div>
+            `;
+            document.getElementById('datasetResult').innerHTML = html;
+            document.getElementById('datasetResult').style.display = 'block';
+            
+            setTimeout(() => location.reload(), 2000);
+        } else {
+            alert('Prediction failed: ' + data.message);
+        }
+    })
+    .catch(error => {
+        document.getElementById('loadingOverlay').classList.remove('show');
+        alert('Error: ' + error.message);
+    });
+});
+</script>
+{% endblock %}

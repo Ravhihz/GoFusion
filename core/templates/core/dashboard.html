@@ -1,0 +1,440 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - GoFusion{% endblock %}
+
+{% block extra_css %}
+<style>
+.stats-card-modern {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    height: 100%;
+    border: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.stats-card-modern::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    opacity: 0.1;
+    transform: translate(30%, -30%);
+}
+
+.stats-card-modern.primary::before { background: #003d82; }
+.stats-card-modern.success::before { background: #11998e; }
+.stats-card-modern.warning::before { background: #fdb714; }
+.stats-card-modern.info::before { background: #0066cc; }
+
+.stats-card-modern:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
+}
+
+.stats-icon-modern {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 0.8rem;
+}
+
+.stats-icon-modern.primary {
+    background: linear-gradient(135deg, #003d82 0%, #0066cc 100%);
+    color: white;
+}
+
+.stats-icon-modern.success {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+}
+
+.stats-icon-modern.warning {
+    background: linear-gradient(135deg, #fdb714 0%, #ffd700 100%);
+    color: white;
+}
+
+.stats-icon-modern.info {
+    background: linear-gradient(135deg, #0066cc 0%, #4facfe 100%);
+    color: white;
+}
+
+.stats-value {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+}
+
+.stats-label {
+    color: #718096;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stats-footer {
+    margin-top: 0.8rem;
+    padding-top: 0.8rem;
+    border-top: 2px solid #f0f2f5;
+}
+
+.stats-footer a {
+    color: #003d82;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+}
+
+.stats-footer a:hover {
+    color: #0066cc;
+    transform: translateX(5px);
+    display: inline-block;
+}
+
+.action-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    height: 100%;
+}
+
+.action-card-header {
+    background: linear-gradient(135deg, #003d82 0%, #0066cc 100%);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 12px 12px 0 0;
+    margin: -1.5rem -1.5rem 1rem;
+}
+
+.action-card-header h5 {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.action-btn {
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    border: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.action-btn i {
+    font-size: 1.2rem;
+    color: #fdb714;
+}
+
+.action-btn:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.action-btn.primary {
+    background: linear-gradient(135deg, #003d82 0%, #0066cc 100%);
+    color: white;
+}
+
+.action-btn.outline {
+    background: white;
+    color: #003d82;
+    border: 2px solid #003d82;
+}
+
+.action-btn.outline:hover {
+    background: #003d82;
+    color: white;
+}
+
+.recent-item {
+    padding: 1rem;
+    border-radius: 10px;
+    border: 2px solid #f0f2f5;
+    margin-bottom: 0.6rem;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: block;
+    color: inherit;
+}
+
+.recent-item:hover {
+    border-color: #003d82;
+    background: linear-gradient(135deg, rgba(0, 61, 130, 0.05) 0%, rgba(0, 102, 204, 0.05) 100%);
+    transform: translateX(5px);
+}
+
+.recent-item h6 {
+    margin-bottom: 0.3rem;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #2d3748;
+}
+
+.recent-item small {
+    color: #718096;
+    font-size: 0.8rem;
+}
+
+.workflow-step {
+    background: white;
+    padding: 1rem;
+    border-radius: 10px;
+    border: 2px solid #f0f2f5;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.workflow-step:hover {
+    border-color: #003d82;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 15px rgba(0, 61, 130, 0.15);
+}
+
+.workflow-step i {
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+}
+
+.workflow-step.step-1 i { color: #003d82; }
+.workflow-step.step-2 i { color: #11998e; }
+.workflow-step.step-3 i { color: #fdb714; }
+.workflow-step.step-4 i { color: #0066cc; }
+.workflow-step.step-5 i { color: #f5576c; }
+.workflow-step.step-6 i { color: #feca57; }
+
+.workflow-step p {
+    margin: 0;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #2d3748;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 2rem 1rem;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    color: #cbd5e0;
+    margin-bottom: 0.8rem;
+}
+
+.empty-state p {
+    color: #718096;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="py-3">
+    <div class="mb-4">
+        <h1 class="fw-bold mb-2" style="font-size: 1.8rem;">
+            <i class="bi bi-speedometer2" style="background: linear-gradient(135deg, #003d82 0%, #0066cc 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i> 
+            Dashboard
+        </h1>
+        <p class="text-muted mb-0" style="font-size: 0.9rem;">Welcome to GoFusion - Fusion Sentiment Analysis System</p>
+    </div>
+    
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="stats-card-modern primary">
+                <div class="stats-icon-modern primary">
+                    <i class="bi bi-database"></i>
+                </div>
+                <div class="stats-value">{{ total_datasets }}</div>
+                <div class="stats-label">Total Datasets</div>
+                <div class="stats-footer">
+                    <a href="{% url 'core:dataset_list' %}">
+                        View all <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="stats-card-modern success">
+                <div class="stats-icon-modern success">
+                    <i class="bi bi-chat-dots"></i>
+                </div>
+                <div class="stats-value">{{ total_tweets|default:0 }}</div>
+                <div class="stats-label">Total Tweets</div>
+                <div class="stats-footer">
+                    <span class="text-muted" style="font-size: 0.8rem;">Imported tweets</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="stats-card-modern warning">
+                <div class="stats-icon-modern warning">
+                    <i class="bi bi-tags"></i>
+                </div>
+                <div class="stats-value">{{ total_labeled|default:0 }}</div>
+                <div class="stats-label">Labeled Tweets</div>
+                <div class="stats-footer">
+                    <span class="text-muted" style="font-size: 0.8rem;">Manually labeled</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="stats-card-modern info">
+                <div class="stats-icon-modern info">
+                    <i class="bi bi-cpu"></i>
+                </div>
+                <div class="stats-value">{{ total_models|default:0 }}</div>
+                <div class="stats-label">SVM Models</div>
+                <div class="stats-footer">
+                    <a href="{% url 'core:models_list' %}">
+                        View models <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row g-3 mb-3">
+        <div class="col-md-6">
+            <div class="action-card">
+                <div class="action-card-header">
+                    <h5><i class="bi bi-lightning-fill"></i> Quick Actions</h5>
+                </div>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'core:upload_dataset' %}" class="btn action-btn primary">
+                        <i class="bi bi-upload"></i>
+                        <span>Upload New Dataset</span>
+                    </a>
+                    <a href="{% url 'core:dataset_list' %}" class="btn action-btn outline">
+                        <i class="bi bi-table"></i>
+                        <span>View All Datasets</span>
+                    </a>
+                    <a href="{% url 'core:dictionary' %}" class="btn action-btn outline">
+                        <i class="bi bi-book"></i>
+                        <span>Manage Dictionary</span>
+                    </a>
+                    <a href="{% url 'core:prediction_page' %}" class="btn action-btn outline">
+                        <i class="bi bi-magic"></i>
+                        <span>Make Predictions</span>
+                    </a>
+                    <a href="{% url 'core:analytics' %}" class="btn action-btn outline">
+                        <i class="bi bi-bar-chart"></i>
+                        <span>View Analytics</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="action-card">
+                <div class="action-card-header" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                    <h5><i class="bi bi-clock-history"></i> Recent Datasets</h5>
+                </div>
+                {% if recent_datasets %}
+                <div>
+                    {% for dataset in recent_datasets %}
+                    <a href="{% url 'core:dataset_detail' dataset.id %}" class="recent-item">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6><i class="bi bi-database text-primary"></i> {{ dataset.name }}</h6>
+                                <small>
+                                    <i class="bi bi-chat-dots"></i> {{ dataset.total_tweets }} tweets
+                                    • 
+                                    <i class="bi bi-clock"></i> {{ dataset.uploaded_at|timesince }} ago
+                                </small>
+                            </div>
+                            <i class="bi bi-chevron-right text-muted"></i>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-inbox"></i>
+                    <p>No datasets yet</p>
+                    <a href="{% url 'core:upload_dataset' %}" class="btn action-btn primary">
+                        <i class="bi bi-upload"></i>
+                        <span>Upload First Dataset</span>
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="action-card">
+        <div class="action-card-header" style="background: linear-gradient(135deg, #0066cc 0%, #4facfe 100%);">
+            <h5><i class="bi bi-diagram-3"></i> Sentiment Analysis Workflow</h5>
+        </div>
+        
+        <div class="row g-2 mb-3">
+            <div class="col-md-2">
+                <div class="workflow-step step-1">
+                    <i class="bi bi-upload"></i>
+                    <p>1. Upload</p>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="workflow-step step-2">
+                    <i class="bi bi-filter-circle"></i>
+                    <p>2. Preprocess</p>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="workflow-step step-3">
+                    <i class="bi bi-check-circle"></i>
+                    <p>3. Preliminary</p>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="workflow-step step-4">
+                    <i class="bi bi-shuffle"></i>
+                    <p>4. Sampling</p>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="workflow-step step-5">
+                    <i class="bi bi-tags"></i>
+                    <p>5. Labeling</p>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="workflow-step step-6">
+                    <i class="bi bi-lightning-charge"></i>
+                    <p>6. Training</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="alert" style="background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%); border: none; border-radius: 12px; padding: 1rem;">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-info-circle-fill text-info me-2" style="font-size: 1.3rem;"></i>
+                <div style="font-size: 0.9rem;">
+                    <strong>Workflow Note:</strong> Dictionary extension runs <strong>AFTER training</strong> (Step 6 in training dashboard) - following the methodology from IEEE Access 2022 paper.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

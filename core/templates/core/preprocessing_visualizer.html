@@ -1,0 +1,232 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load preprocessing_tags %}
+
+{% block title %}Preview Preprocessing - {{ dataset.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="card shadow">
+        <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">
+                    <i class="bi bi-eye"></i> Preview Preprocessing: {{ dataset.name }}
+                </h4>
+                <a href="{% url 'core:dataset_detail' dataset.id %}" class="btn btn-light btn-sm">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h3 class="text-primary">{{ total_tweets }}</h3>
+                            <small>Total Data</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h3 class="text-success">{{ preprocessed_count }}</h3>
+                            <small>Preprocessed</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h3 class="text-info">{{ sample_count }}</h3>
+                            <small>Showing Sample</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h3 class="text-warning">{{ progress }}%</h3>
+                            <small>Progress</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if samples %}
+            <h5 class="mb-3">
+                <i class="bi bi-file-text"></i> Top {{ samples|length }} Preprocessing Results
+            </h5>
+
+            {% for item in samples %}
+            <div class="card mb-4 border-start border-primary border-4">
+                <div class="card-header bg-light">
+                    <div class="d-flex justify-content-between">
+                        <strong>Data #{{ forloop.counter }}</strong>
+                        <span class="badge bg-secondary">Tweet ID: {{ item.tweet.tweet_id }}</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Step 0: Original Text -->
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="badge bg-primary me-2">0</span>
+                            <strong>Original Text</strong>
+                        </div>
+                        <div class="p-3 bg-light rounded" style="font-family: 'Courier New', monospace; border-left: 3px solid #0d6efd;">
+                            {{ item.original_text }}
+                        </div>
+                    </div>
+
+                    <!-- Step 1: Remove Punctuation -->
+                    {% if item.after_remove_punctuation %}
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="badge bg-success me-2">1</span>
+                            <strong>After Remove Punctuation</strong>
+                            <small class="text-muted ms-2">- Remove URL, mention, hashtag, punctuation, numbers</small>
+                        </div>
+                        <div class="p-3 bg-light rounded" style="font-family: 'Courier New', monospace; border-left: 3px solid #198754;">
+                            {{ item.after_remove_punctuation|highlight_diff:item.original_text }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Step 2: Cleaning -->
+                    {% if item.after_cleaning %}
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="badge bg-info me-2">2</span>
+                            <strong>After Cleaning</strong>
+                            <small class="text-muted ms-2">- Remove extra spaces</small>
+                        </div>
+                        <div class="p-3 bg-light rounded" style="font-family: 'Courier New', monospace; border-left: 3px solid #0dcaf0;">
+                            {{ item.after_cleaning|highlight_diff:item.after_remove_punctuation }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Step 3: Case Folding -->
+                    {% if item.after_case_folding %}
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="badge bg-warning me-2">3</span>
+                            <strong>After Case Folding (Lowercase)</strong>
+                        </div>
+                        <div class="p-3 bg-light rounded" style="font-family: 'Courier New', monospace; border-left: 3px solid #ffc107;">
+                            {{ item.after_case_folding|highlight_diff:item.after_cleaning }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Step 4: Normalization -->
+                    {% if item.after_normalization %}
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="badge me-2" style="background-color: #6f42c1;">4</span>
+                            <strong>After Normalization</strong>
+                            <small class="text-muted ms-2">- Slang → Formal words</small>
+                        </div>
+                        <div class="p-3 bg-light rounded" style="font-family: 'Courier New', monospace; border-left: 3px solid #6f42c1;">
+                            {{ item.after_normalization|highlight_diff:item.after_case_folding }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Step 5: Stopword Removal -->
+                    {% if item.after_stopword %}
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="badge bg-danger me-2">5</span>
+                            <strong>After Stopword Removal</strong>
+                            <small class="text-muted ms-2">- Indonesian stopwords removed</small>
+                        </div>
+                        <div class="p-3 bg-light rounded" style="font-family: 'Courier New', monospace; border-left: 3px solid #dc3545;">
+                            {% if item.after_normalization %}
+                                {{ item.after_normalization|highlight_stopword_removal:item.after_stopword }}
+                            {% else %}
+                                {{ item.after_case_folding|highlight_stopword_removal:item.after_stopword }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Step 6: Stemming -->
+                    {% if item.after_stemming %}
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="badge bg-dark me-2">6</span>
+                            <strong>After Stemming</strong>
+                            <small class="text-muted ms-2">- Sastrawi stemming</small>
+                        </div>
+                        <div class="p-3 bg-light rounded" style="font-family: 'Courier New', monospace; border-left: 3px solid #343a40;">
+                            {{ item.after_stemming|highlight_diff:item.after_stopword }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Step 7: Tokens -->
+                    {% if item.tokens %}
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="badge bg-secondary me-2">7</span>
+                            <strong>Tokens</strong>
+                            <small class="text-muted ms-2">- Total: {{ item.tokens|length }} tokens</small>
+                        </div>
+                        <div class="p-3 bg-light rounded">
+                            {% for token in item.tokens %}
+                            <span class="badge bg-secondary me-1 mb-1">{{ token }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+
+            {% else %}
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle"></i> 
+                <strong>No preprocessed data found.</strong> 
+                Please run preprocessing first.
+            </div>
+            {% endif %}
+
+            <div class="d-flex gap-2 mt-4">
+                <a href="{% url 'core:preprocess_dataset' dataset.id %}" class="btn btn-primary">
+                    <i class="bi bi-filter"></i> Go to Preprocessing
+                </a>
+                <a href="{% url 'core:dataset_detail' dataset.id %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Dataset
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.highlight-change {
+    background: #ffd700;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-weight: 600;
+    color: #333;
+}
+
+.stopword-removed {
+    text-decoration: line-through;
+    color: #ff4444;
+    background: #ffebee;
+    padding: 2px 6px;
+    border-radius: 3px;
+    opacity: 0.8;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: all 0.2s;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,459 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dataset List - GoFusion{% endblock %}
+
+{% block extra_css %}
+<style>
+.dataset-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    margin-bottom: 1rem;
+}
+
+.dataset-card:hover {
+    border-color: #003d82;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0, 61, 130, 0.2);
+}
+
+.dataset-header {
+    display: flex;
+    justify-content: between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.dataset-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #003d82 0%, #0066cc 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    color: white;
+    margin-right: 1rem;
+    flex-shrink: 0;
+}
+
+.dataset-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 0.3rem;
+}
+
+.dataset-description {
+    color: #718096;
+    font-size: 0.9rem;
+}
+
+.dataset-stats {
+    display: flex;
+    gap: 1.5rem;
+    margin: 1rem 0;
+    padding: 1rem;
+    background: #f7fafc;
+    border-radius: 12px;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2d3748;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: #718096;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.status-badge.success {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    color: #155724;
+}
+
+.status-badge.warning {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    color: #856404;
+}
+
+.status-badge.info {
+    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+    color: #0c5460;
+}
+
+.progress-modern {
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 0.5rem;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #003d82 0%, #0066cc 100%);
+    border-radius: 10px;
+    transition: width 0.5s ease;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.btn-action {
+    padding: 0.6rem 1.2rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: 2px solid;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-action i {
+    color: #fdb714;
+}
+
+.btn-action.primary {
+    background: linear-gradient(135deg, #003d82 0%, #0066cc 100%);
+    border-color: transparent;
+    color: white;
+}
+
+.btn-action.primary i {
+    color: #fdb714;
+}
+
+.btn-action.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 61, 130, 0.4);
+}
+
+.btn-action.outline {
+    background: white;
+    border-color: #e2e8f0;
+    color: #4a5568;
+}
+
+.btn-action.outline i {
+    color: #003d82;
+}
+
+.btn-action.outline:hover {
+    border-color: #003d82;
+    color: #003d82;
+    transform: translateY(-2px);
+}
+
+.btn-action.danger {
+    background: white;
+    border-color: #e2e8f0;
+    color: #dc3545;
+}
+
+.btn-action.danger i {
+    color: #dc3545;
+}
+
+.btn-action.danger:hover {
+    background: #dc3545;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.btn-action.danger:hover i {
+    color: white;
+}
+
+.empty-state-modern {
+    background: white;
+    border-radius: 16px;
+    padding: 3rem 2rem;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.empty-icon {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 1.5rem;
+    background: linear-gradient(135deg, #f7fafc 0%, #e2e8f0 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    color: #cbd5e0;
+}
+
+.page-header-modern {
+    background: linear-gradient(135deg, #003d82 0%, #0066cc 100%);
+    border-radius: 20px;
+    padding: 1.5rem 2rem;
+    color: white;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 10px 40px rgba(0, 61, 130, 0.3);
+}
+
+.page-header-modern h1 {
+    font-weight: 700;
+    font-size: 1.8rem;
+    margin-bottom: 0.3rem;
+}
+
+.page-header-modern p {
+    opacity: 0.9;
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+.btn-header {
+    background: white;
+    color: #003d82;
+    padding: 0.7rem 1.3rem;
+    border-radius: 12px;
+    font-weight: 600;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.btn-header i {
+    color: #fdb714;
+}
+
+.btn-header:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="py-3" style="max-width: 1400px; margin: 0 auto;">
+    
+    <div class="page-header-modern">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1><i class="bi bi-database"></i> Dataset Management</h1>
+                <p>Manage and organize your sentiment analysis datasets</p>
+            </div>
+            <a href="{% url 'core:upload_dataset' %}" class="btn btn-header">
+                <i class="bi bi-upload"></i> Upload New Dataset
+            </a>
+        </div>
+    </div>
+
+    {% if datasets %}
+    <div class="row g-3">
+        {% for dataset in datasets %}
+        <div class="col-12">
+            <div class="dataset-card">
+                <div class="row align-items-center">
+                    <div class="col-md-5">
+                        <div class="d-flex">
+                            <div class="dataset-icon">
+                                <i class="bi bi-file-earmark-text"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="dataset-title">{{ dataset.name }}</div>
+                                {% if dataset.description %}
+                                <div class="dataset-description">{{ dataset.description|truncatechars:80 }}</div>
+                                {% else %}
+                                <div class="dataset-description">No description provided</div>
+                                {% endif %}
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar"></i> {{ dataset.uploaded_at|date:"M d, Y" }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="dataset-stats">
+                            <div class="stat-item">
+                                <div class="stat-value">{{ dataset.total_tweets }}</div>
+                                <div class="stat-label">Tweets</div>
+                            </div>
+                            {% if dataset.preprocessed_count > 0 %}
+                            <div class="stat-item">
+                                <div class="stat-value">{{ dataset.preprocessed_count }}</div>
+                                <div class="stat-label">Preprocessed</div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="col-md-2">
+                        {% if dataset.status == 'preprocessed' %}
+                        <span class="status-badge success">
+                            <i class="bi bi-check-circle-fill"></i>
+                            Preprocessed
+                        </span>
+                        {% elif dataset.status == 'preprocessing' %}
+                        <span class="status-badge info">
+                            <i class="bi bi-hourglass-split"></i>
+                            Processing
+                        </span>
+                        <div class="progress-modern">
+                            <div class="progress-fill" style="width: {{ dataset.preprocessing_percentage }}%"></div>
+                        </div>
+                        {% else %}
+                        <span class="status-badge warning">
+                            <i class="bi bi-exclamation-circle"></i>
+                            Not Preprocessed
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-2">
+                        <div class="action-buttons">
+                            <a href="{% url 'core:dataset_detail' dataset.id %}" 
+                               class="btn btn-action outline">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                            
+                            {% if dataset.status != 'preprocessed' %}
+                            <a href="{% url 'core:preprocess_dataset' dataset.id %}" 
+                               class="btn btn-action primary">
+                                <i class="bi bi-filter-circle"></i> Preprocess
+                            </a>
+                            {% endif %}
+                            
+                            <button onclick="deleteDataset({{ dataset.id }}, '{{ dataset.name|escapejs }}')" 
+                                    class="btn btn-action danger">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state-modern">
+        <div class="empty-icon">
+            <i class="bi bi-inbox"></i>
+        </div>
+        <h3 class="mb-3" style="font-size: 1.5rem;">No Datasets Yet</h3>
+        <p class="text-muted mb-4">Get started by uploading your first dataset for sentiment analysis</p>
+        <a href="{% url 'core:upload_dataset' %}" class="btn btn-action primary" style="font-size: 1rem; padding: 0.9rem 1.8rem;">
+            <i class="bi bi-upload"></i> Upload Your First Dataset
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+function deleteDataset(datasetId, datasetName) {
+    Swal.fire({
+        title: 'Delete Dataset?',
+        html: `Are you sure you want to delete <strong>"${datasetName}"</strong>?<br><br>This action cannot be undone.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: '<i class="bi bi-trash"></i> Yes, Delete',
+        cancelButtonText: '<i class="bi bi-x-circle"></i> Cancel',
+        customClass: {
+            confirmButton: 'btn btn-danger',
+            cancelButton: 'btn btn-secondary'
+        },
+        buttonsStyling: false
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Deleting...',
+                text: 'Please wait',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetch(`/datasets/${datasetId}/delete/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Deleted!',
+                        text: 'Dataset has been deleted successfully.',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: data.message || 'Failed to delete dataset',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'An error occurred: ' + error.message,
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            });
+        }
+    });
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}

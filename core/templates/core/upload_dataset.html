@@ -1,0 +1,324 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Upload Dataset - GoFusion{% endblock %}
+
+{% block extra_css %}
+<style>
+.upload-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.page-header-upload {
+    background: linear-gradient(135deg, #003d82 0%, #0066cc 100%);
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    color: white;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 30px rgba(0, 61, 130, 0.3);
+}
+
+.page-header-upload h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.upload-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: none;
+    overflow: hidden;
+}
+
+.upload-card-header {
+    background: linear-gradient(135deg, #003d82 0%, #0066cc 100%);
+    color: white;
+    padding: 1.2rem 1.5rem;
+    border: none;
+}
+
+.upload-card-header h5 {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.upload-card-body {
+    padding: 1.5rem;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.form-control, .form-select {
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 0.7rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #003d82;
+    box-shadow: 0 0 0 0.2rem rgba(0, 61, 130, 0.15);
+}
+
+.form-text {
+    font-size: 0.85rem;
+    color: #718096;
+    margin-top: 0.3rem;
+}
+
+.file-input-wrapper {
+    position: relative;
+}
+
+.file-input-custom {
+    border: 3px dashed #003d82;
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    background: linear-gradient(135deg, rgba(0, 61, 130, 0.03) 0%, rgba(0, 102, 204, 0.03) 100%);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.file-input-custom:hover {
+    background: linear-gradient(135deg, rgba(0, 61, 130, 0.08) 0%, rgba(0, 102, 204, 0.08) 100%);
+    border-color: #0066cc;
+}
+
+.file-input-custom i {
+    font-size: 3rem;
+    color: #003d82;
+    margin-bottom: 1rem;
+}
+
+.file-input-custom input[type="file"] {
+    position: absolute;
+    left: -9999px;
+}
+
+.btn-upload {
+    background: linear-gradient(135deg, #003d82 0%, #0066cc 100%);
+    border: none;
+    color: white;
+    padding: 0.9rem 2rem;
+    font-weight: 600;
+    font-size: 1rem;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.btn-upload:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 61, 130, 0.4);
+    color: white;
+}
+
+.btn-upload i {
+    color: #fdb714;
+}
+
+.btn-back {
+    background: white;
+    border: 2px solid #e2e8f0;
+    color: #4a5568;
+    padding: 0.7rem 1.3rem;
+    font-weight: 600;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.btn-back:hover {
+    border-color: #003d82;
+    color: #003d82;
+    transform: translateY(-2px);
+}
+
+.alert-info-custom {
+    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+    border: none;
+    border-radius: 12px;
+    padding: 1.2rem;
+}
+
+.alert-info-custom .alert-heading {
+    color: #0c5460;
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 0.8rem;
+}
+
+.alert-info-custom ul {
+    margin-bottom: 0.5rem;
+    padding-left: 1.5rem;
+}
+
+.alert-info-custom code {
+    background: rgba(12, 84, 96, 0.1);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    color: #0c5460;
+    font-weight: 600;
+}
+
+.sample-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: none;
+    overflow: hidden;
+    margin-top: 1.5rem;
+}
+
+.sample-card-header {
+    background: linear-gradient(135deg, #718096 0%, #4a5568 100%);
+    color: white;
+    padding: 1rem 1.5rem;
+    border: none;
+}
+
+.sample-card-header h6 {
+    margin: 0;
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.sample-card-body {
+    padding: 1.5rem;
+    background: #f7fafc;
+}
+
+.sample-card-body pre {
+    background: #2d3748;
+    color: #e2e8f0;
+    padding: 1.2rem;
+    border-radius: 10px;
+    margin: 0;
+    font-size: 0.85rem;
+    overflow-x: auto;
+}
+
+.sample-card-body code {
+    color: #68d391;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="py-3 upload-container">
+    <div class="page-header-upload">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1><i class="bi bi-upload"></i> Upload New Dataset</h1>
+            <a href="{% url 'core:dataset_list' %}" class="btn btn-back">
+                <i class="bi bi-arrow-left"></i> Back to List
+            </a>
+        </div>
+    </div>
+    
+    <div class="upload-card">
+        <div class="upload-card-header">
+            <h5><i class="bi bi-info-circle"></i> Dataset Information</h5>
+        </div>
+        <div class="upload-card-body">
+            <form method="post" enctype="multipart/form-data" id="uploadForm">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label for="name" class="form-label">Dataset Name <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="name" name="name" placeholder="e.g., Twitter Sentiment MBG 2025" required>
+                    <div class="form-text">Choose a descriptive name for your dataset</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="3" placeholder="Optional description about the dataset..."></textarea>
+                    <div class="form-text">Optional description about the dataset</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Upload File <span class="text-danger">*</span></label>
+                    <div class="file-input-wrapper">
+                        <label for="file" class="file-input-custom">
+                            <i class="bi bi-cloud-arrow-up"></i>
+                            <div>
+                                <strong style="color: #003d82; font-size: 1.1rem;">Click to upload</strong> or drag and drop
+                            </div>
+                            <div class="text-muted mt-2" style="font-size: 0.9rem;">
+                                CSV, Excel (XLSX, XLS) • Max 100MB
+                            </div>
+                            <input type="file" class="form-control" id="file" name="file" accept=".csv,.xlsx,.xls" required>
+                        </label>
+                        <div id="fileName" class="mt-2 text-center" style="font-weight: 600; color: #003d82;"></div>
+                    </div>
+                </div>
+                
+                <div class="alert-info-custom mb-4">
+                    <h6 class="alert-heading"><i class="bi bi-info-circle-fill"></i> File Requirements</h6>
+                    <p class="mb-2" style="font-size: 0.9rem;"><strong>Required columns (one of these):</strong></p>
+                    <ul style="font-size: 0.9rem;">
+                        <li><code>text</code> or <code>tweet</code> or <code>full_text</code> or <code>content</code> or <code>message</code></li>
+                    </ul>
+                    <p class="mb-2" style="font-size: 0.9rem;"><strong>Optional columns:</strong></p>
+                    <ul class="mb-0" style="font-size: 0.9rem;">
+                        <li><code>id</code>, <code>tweet_id</code>, <code>id_str</code> - Tweet ID</li>
+                        <li><code>username</code>, <code>user</code>, <code>screen_name</code> - Username</li>
+                        <li><code>created_at</code> - Timestamp</li>
+                    </ul>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-upload">
+                        <i class="bi bi-upload"></i> Upload Dataset
+                    </button>
+                    <a href="{% url 'core:dataset_list' %}" class="btn btn-outline-secondary" style="border-radius: 10px; font-weight: 600;">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="sample-card">
+        <div class="sample-card-header">
+            <h6><i class="bi bi-file-earmark-text"></i> Sample CSV Format</h6>
+        </div>
+        <div class="sample-card-body">
+            <pre><code>full_text,username,created_at
+"This product is amazing!",user123,2025-01-01 10:00:00
+"Not satisfied with the service",user456,2025-01-01 11:30:00
+"Great experience overall",user789,2025-01-01 12:15:00</code></pre>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('file').addEventListener('change', function(e) {
+    const fileName = e.target.files[0]?.name;
+    const fileNameDiv = document.getElementById('fileName');
+    if (fileName) {
+        fileNameDiv.innerHTML = `<i class="bi bi-file-earmark-check"></i> ${fileName}`;
+    } else {
+        fileNameDiv.innerHTML = '';
+    }
+});
+
+document.getElementById('uploadForm').addEventListener('submit', function(e) {
+    const fileInput = document.getElementById('file');
+    if (fileInput.files.length === 0) {
+        e.preventDefault();
+        alert('Please select a file to upload');
+        return false;
+    }
+});
+</script>
+{% endblock %}

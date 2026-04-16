@@ -1,0 +1,571 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Training Dashboard - {{ dataset.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.training-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.page-header-training {
+    background: linear-gradient(135deg, #0066cc 0%, #4facfe 100%);
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    color: white;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 30px rgba(0, 102, 204, 0.3);
+}
+
+.page-header-training h3 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+}
+
+.page-header-training small {
+    opacity: 0.9;
+    font-size: 0.95rem;
+}
+
+.step-card {
+    transition: all 0.3s ease;
+    border-left: 4px solid #dee2e6;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+}
+
+.step-card.completed {
+    border-left-color: #28a745;
+    background-color: #f0fff4;
+}
+
+.step-card.running {
+    border-left-color: #003d82;
+    background-color: #e7f3ff;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}
+
+.step-card.ready {
+    border-left-color: #fdb714;
+    background-color: #fffef8;
+}
+
+.progress-training {
+    height: 25px;
+    font-size: 0.85rem;
+    border-radius: 15px;
+    background: #e9ecef;
+}
+
+.progress-bar-training {
+    background: linear-gradient(90deg, #003d82 0%, #0066cc 100%);
+    font-weight: 700;
+}
+
+.stat-card-training {
+    background: white;
+    border-radius: 12px;
+    padding: 1.2rem;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.stat-card-training:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.stat-card-training i {
+    font-size: 1.8rem;
+}
+
+.stat-card-training h4 {
+    margin-top: 0.8rem;
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+.stat-card-training h6 {
+    font-size: 0.85rem;
+    color: #6c757d;
+    font-weight: 600;
+}
+
+.log-output {
+    background: #1e1e1e;
+    color: #d4d4d4;
+    padding: 1rem;
+    border-radius: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    display: none;
+}
+
+.log-output.show {
+    display: block;
+}
+
+.log-line {
+    margin: 2px 0;
+    line-height: 1.4;
+}
+
+.log-success { color: #4ec9b0; }
+.log-error { color: #f48771; }
+.log-warning { color: #dcdcaa; }
+.log-info { color: #9cdcfe; }
+
+.training-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    border: none;
+    margin-bottom: 1.5rem;
+}
+
+.training-card-header {
+    background: linear-gradient(135deg, #003d82 0%, #0066cc 100%);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 12px 12px 0 0;
+}
+
+.model-status-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    border: none;
+}
+
+.btn-run-step {
+    background: linear-gradient(135deg, #003d82 0%, #0066cc 100%);
+    border: none;
+    color: white;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 0.6rem 1.2rem;
+}
+
+.btn-run-step:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 61, 130, 0.4);
+    color: white;
+}
+
+.btn-run-step i {
+    color: #fdb714;
+}
+
+.btn-back-training {
+    background: white;
+    color: #0066cc;
+    border: 2px solid rgba(0, 102, 204, 0.3);
+    font-weight: 600;
+    border-radius: 10px;
+    padding: 0.7rem 1.3rem;
+}
+
+.btn-back-training:hover {
+    background: rgba(255, 255, 255, 0.9);
+    transform: translateY(-2px);
+    color: #0066cc;
+}
+
+.btn-reset {
+    background: white;
+    color: #dc3545;
+    border: 2px solid rgba(220, 53, 69, 0.3);
+    font-weight: 600;
+    border-radius: 10px;
+    padding: 0.7rem 1.3rem;
+}
+
+.btn-reset:hover {
+    background: rgba(255, 255, 255, 0.9);
+    transform: translateY(-2px);
+    color: #dc3545;
+}
+
+.modal-header.danger {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="py-3 training-container">
+
+  <div class="page-header-training">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <h3><i class="bi bi-diagram-3"></i> Training Dashboard</h3>
+        <small>Dataset: <strong>{{ dataset.name }}</strong></small>
+      </div>
+      <div class="d-flex gap-2">
+        <a href="{% url 'core:dataset_detail' dataset.id %}" class="btn btn-back-training">
+          <i class="bi bi-arrow-left"></i> Back
+        </a>
+        <button class="btn btn-reset" onclick="openResetModal()">
+          <i class="bi bi-arrow-clockwise"></i> Reset Training
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="training-card">
+    <div class="card-body">
+      <h6 class="mb-3" style="font-weight: 700;">
+        <i class="bi bi-speedometer2"></i> Overall Progress
+      </h6>
+      <div class="progress-training">
+        <div id="overallProgress" class="progress-bar progress-bar-striped progress-bar-animated progress-bar-training" 
+             style="width: {{ completed_percentage }}%">
+          {{ completed_percentage|floatformat:0 }}% Complete
+        </div>
+      </div>
+      <small class="text-muted mt-2 d-block">
+        {{ completed_steps }} of {{ total_steps }} steps completed
+      </small>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-md-3">
+      <div class="stat-card-training">
+        <i class="bi bi-journals text-primary"></i>
+        <h4 class="text-primary">{{ train_count }}</h4>
+        <h6>Training Data</h6>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card-training">
+        <i class="bi bi-clipboard-check text-info"></i>
+        <h4 class="text-info">{{ test_count }}</h4>
+        <h6>Testing Data</h6>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card-training">
+        <i class="bi bi-grid-3x3 text-success"></i>
+        <h4 class="text-success">{{ features_count }}</h4>
+        <h6>Feature Vectors</h6>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card-training">
+        <i class="bi bi-vector-pen text-warning"></i>
+        <h4 class="text-warning">{{ embeddings_count }}</h4>
+        <h6>Word Embeddings</h6>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-md-6">
+      <div class="model-status-card">
+        <div class="card-body">
+          <h6 style="font-weight: 700;"><i class="bi bi-cpu"></i> Initial Model (Base Dictionary)</h6>
+          {% if model_exists %}
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="badge bg-success" style="font-size: 1.1rem; padding: 0.5rem 1rem;">
+                <i class="bi bi-check-circle"></i> {{ model_accuracy|floatformat:2 }}% Accuracy
+              </span>
+              <small class="text-muted">Step 5 Completed</small>
+            </div>
+          {% else %}
+            <span class="badge bg-secondary">Not Trained Yet</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="model-status-card">
+        <div class="card-body">
+          <h6 style="font-weight: 700;"><i class="bi bi-cpu-fill"></i> Final Model (Extended Dictionary)</h6>
+          {% if final_model_exists %}
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="badge" style="background: linear-gradient(135deg, #003d82 0%, #0066cc 100%); font-size: 1.1rem; padding: 0.5rem 1rem;">
+                <i class="bi bi-star-fill"></i> {{ final_model_accuracy|floatformat:2 }}% Accuracy
+              </span>
+              <small class="text-muted">Step 7 Completed</small>
+            </div>
+          {% else %}
+            <span class="badge bg-secondary">Not Trained Yet</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="training-card">
+    <div class="card-header bg-dark text-white d-flex justify-content-between" style="border-radius: 12px 12px 0 0;">
+      <span><i class="bi bi-terminal"></i> Process Log</span>
+      <button class="btn btn-sm btn-outline-light" onclick="clearLog()">
+        <i class="bi bi-x-circle"></i> Clear
+      </button>
+    </div>
+    <div class="card-body p-0">
+      <div id="logOutput" class="log-output">
+        <div class="log-line log-info">Ready to start training...</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="training-card">
+    <div class="training-card-header">
+      <strong><i class="bi bi-list-check"></i> Training Steps</strong>
+    </div>
+    <div class="list-group list-group-flush" id="stepsList">
+
+      {% for step in steps %}
+      <div class="list-group-item step-card {% if step.status == 'completed' %}completed{% endif %}" 
+           id="step-{{ step.id }}"
+           data-step-id="{{ step.id }}">
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="flex-grow-1">
+            <div class="d-flex align-items-center">
+              <span class="badge bg-secondary me-2" style="width: 50px; font-weight: 600;">
+                Step {{ step.id }}
+              </span>
+              <strong>{{ step.label }}</strong>
+              
+              {% if step.status == "completed" %}
+                <span class="badge bg-success ms-2">
+                  <i class="bi bi-check-circle-fill"></i> Completed
+                </span>
+              {% elif step.status == "ready" %}
+                <span class="badge" style="background: #fdb714; color: #856404;" class="ms-2">
+                  <i class="bi bi-clock-fill"></i> Ready to Run
+                </span>
+              {% else %}
+                <span class="badge bg-secondary ms-2">
+                  <i class="bi bi-lock-fill"></i> Locked
+                </span>
+              {% endif %}
+
+              <span class="spinner-border spinner-border-sm text-primary ms-2 d-none" 
+                    id="spinner-{{ step.id }}">
+              </span>
+            </div>
+            <small class="text-muted d-block mt-1">{{ step.description }}</small>
+          </div>
+
+          <div>
+            {% if step.status == "ready" %}
+              <button class="btn btn-run-step" 
+                      id="btn-{{ step.id }}"
+                      onclick="runStep('{{ step.id }}')">
+                <i class="bi bi-play-fill"></i> Run Step
+              </button>
+            {% else %}
+              <button class="btn btn-outline-secondary" disabled>
+                <i class="bi bi-dash-circle"></i> Run Step
+              </button>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+
+    </div>
+  </div>
+
+</div>
+
+<div class="modal fade" id="resetModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header danger text-white">
+        <h5 class="modal-title">
+          <i class="bi bi-exclamation-triangle"></i> Reset Training Data
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-danger">
+          <i class="bi bi-warning"></i> 
+          <strong>Warning:</strong> This will delete selected training artifacts.
+        </p>
+        <div class="form-check mb-2">
+          <input class="form-check-input" id="keepLabels" checked type="checkbox">
+          <label class="form-check-label" for="keepLabels">
+            <strong>Keep Labels</strong>
+            <small class="text-muted d-block">Preserve manual sentiment labels</small>
+          </label>
+        </div>
+        <div class="form-check mb-2">
+          <input class="form-check-input" id="resetFeatures" checked type="checkbox">
+          <label class="form-check-label" for="resetFeatures">
+            <strong>Reset Features</strong>
+            <small class="text-muted d-block">Delete feature vectors and embeddings</small>
+          </label>
+        </div>
+        <div class="form-check mb-2">
+          <input class="form-check-input" id="resetModels" checked type="checkbox">
+          <label class="form-check-label" for="resetModels">
+            <strong>Reset Models</strong>
+            <small class="text-muted d-block">Delete trained SVM models</small>
+          </label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" id="resetDict" checked type="checkbox">
+          <label class="form-check-label" for="resetDict">
+            <strong>Reset Extended Dictionary</strong>
+            <small class="text-muted d-block">Clear extended sentiment dictionary</small>
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-danger" onclick="submitReset()">
+          <i class="bi bi-trash"></i> Reset Selected
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function addLog(message, type = 'info') {
+  const logOutput = document.getElementById('logOutput');
+  logOutput.classList.add('show');
+  
+  const timestamp = new Date().toLocaleTimeString();
+  const logLine = document.createElement('div');
+  logLine.className = `log-line log-${type}`;
+  logLine.textContent = `[${timestamp}] ${message}`;
+  
+  logOutput.appendChild(logLine);
+  logOutput.scrollTop = logOutput.scrollHeight;
+}
+
+function clearLog() {
+  const logOutput = document.getElementById('logOutput');
+  logOutput.innerHTML = '<div class="log-line log-info">Log cleared...</div>';
+}
+
+function runStep(stepId) {
+  const stepCard = document.getElementById(`step-${stepId}`);
+  const button = document.getElementById(`btn-${stepId}`);
+  const spinner = document.getElementById(`spinner-${stepId}`);
+  
+  button.disabled = true;
+  button.innerHTML = '<i class="bi bi-hourglass-split"></i> Running...';
+  spinner.classList.remove('d-none');
+  stepCard.classList.add('running');
+  
+  addLog(`Starting Step ${stepId}...`, 'info');
+  
+  const urls = {
+    "3": "{% url 'core:execute_step_sentiment_scores' dataset.id %}",
+    "4": "{% url 'core:execute_step_word_embeddings' dataset.id %}",
+    "4.5": "{% url 'core:execute_step_pca' dataset.id %}",
+    "5": "{% url 'core:execute_step_train_svm' dataset.id %}",
+    "6": "{% url 'core:execute_step_extend_dictionary' dataset.id %}",
+    "7": "{% url 'core:execute_step_retrain_with_extended' dataset.id %}",
+  };
+  
+  fetch(urls[stepId], { 
+    method: "POST", 
+    headers: { "X-CSRFToken": "{{ csrf_token }}" }
+  })
+  .then(r => r.json())
+  .then(data => {
+    spinner.classList.add('d-none');
+    stepCard.classList.remove('running');
+    
+    if (data.success) {
+      addLog(`Step ${stepId} completed successfully!`, 'success');
+      stepCard.classList.add('completed');
+      
+      showNotification('success', data.message);
+      
+      setTimeout(() => location.reload(), 1500);
+    } else {
+      addLog(`Step ${stepId} failed: ${data.message}`, 'error');
+      button.disabled = false;
+      button.innerHTML = '<i class="bi bi-play-fill"></i> Retry';
+      
+      showNotification('error', 'Step failed: ' + data.message);
+    }
+  })
+  .catch(error => {
+    spinner.classList.add('d-none');
+    stepCard.classList.remove('running');
+    button.disabled = false;
+    button.innerHTML = '<i class="bi bi-play-fill"></i> Retry';
+    
+    addLog(`Error: ${error.message}`, 'error');
+    showNotification('error', 'Network error occurred');
+  });
+}
+
+function openResetModal() {
+  new bootstrap.Modal(document.getElementById("resetModal")).show();
+}
+
+function submitReset() {
+  addLog('Starting reset process...', 'warning');
+  
+  fetch("{% url 'core:reset_training_data' dataset.id %}", {
+    method: "POST",
+    headers: { 
+      "X-CSRFToken": "{{ csrf_token }}", 
+      "Content-Type": "application/json" 
+    },
+    body: JSON.stringify({
+      keep_labels: document.getElementById('keepLabels').checked,
+      reset_features: document.getElementById('resetFeatures').checked,
+      reset_models: document.getElementById('resetModels').checked,
+      reset_extended_dict: document.getElementById('resetDict').checked
+    })
+  })
+  .then(r => r.json())
+  .then(data => {
+    addLog('Reset completed!', 'success');
+    data.summary.forEach(msg => addLog(msg, 'info'));
+    
+    showNotification('success', 'Training data reset successfully');
+    
+    setTimeout(() => location.reload(), 2000);
+  })
+  .catch(error => {
+    addLog(`Reset failed: ${error.message}`, 'error');
+    showNotification('error', 'Reset failed');
+  });
+}
+
+function showNotification(type, message) {
+  const bgColor = type === 'success' ? 'bg-success' : 'bg-danger';
+  const icon = type === 'success' ? 'check-circle-fill' : 'x-circle-fill';
+  
+  const notification = document.createElement('div');
+  notification.className = `alert alert-dismissible fade show ${bgColor} text-white position-fixed top-0 start-50 translate-middle-x mt-3`;
+  notification.style.zIndex = '9999';
+  notification.innerHTML = `
+    <i class="bi bi-${icon}"></i> ${message}
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+  `;
+  
+  document.body.appendChild(notification);
+  
+  setTimeout(() => {
+    notification.remove();
+  }, 5000);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,676 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Feature Viewer - {{ dataset.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.feature-container {
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+.page-header-feature {
+    background: linear-gradient(135deg, #003d82 0%, #0066cc 100%);
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    color: white;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 30px rgba(0, 61, 130, 0.3);
+}
+
+.page-header-feature h3 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+}
+
+.page-header-feature p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 0.95rem;
+}
+
+.stat-card-feature {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.stat-card-feature:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.stat-card-feature i {
+    font-size: 1.8rem;
+}
+
+.sentiment-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.sentiment-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.filter-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    border: none;
+}
+
+.feature-table-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    border: none;
+}
+
+.table-feature {
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.table-feature thead {
+    background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+}
+
+.table-feature th {
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #2d3748;
+    padding: 1rem 0.75rem;
+}
+
+.table-feature td {
+    vertical-align: middle;
+    padding: 0.9rem 0.75rem;
+}
+
+.table-feature tbody tr {
+    transition: all 0.2s ease;
+}
+
+.table-feature tbody tr:hover {
+    background-color: rgba(0, 61, 130, 0.03);
+}
+
+.form-label {
+    font-weight: 600;
+    color: #2d3748;
+    font-size: 0.85rem;
+}
+
+.form-select, .form-control {
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.6rem 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.form-select:focus, .form-control:focus {
+    border-color: #003d82;
+    box-shadow: 0 0 0 0.2rem rgba(0, 61, 130, 0.15);
+}
+
+.btn-back-feature {
+    background: white;
+    color: #0066cc;
+    border: 2px solid rgba(0, 102, 204, 0.3);
+    font-weight: 600;
+    border-radius: 10px;
+    padding: 0.7rem 1.3rem;
+}
+
+.btn-back-feature:hover {
+    background: rgba(255, 255, 255, 0.9);
+    transform: translateY(-2px);
+    color: #0066cc;
+}
+
+.btn-back-feature i {
+    color: #fdb714;
+}
+
+.modal-header.primary {
+    background: linear-gradient(135deg, #003d82 0%, #0066cc 100%);
+}
+
+.badge-feature {
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="py-3 feature-container">
+
+    <div class="page-header-feature">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h3><i class="bi bi-diagram-3"></i> Feature Viewer</h3>
+                <p>{{ dataset.name }}</p>
+            </div>
+            <a href="{% url 'core:training_dashboard' dataset.id %}" class="btn btn-back-feature">
+                <i class="bi bi-arrow-left"></i> Back to Training
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-3">
+            <div class="stat-card-feature">
+                <div class="card-body text-center">
+                    <div class="mb-2">
+                        {% if step4_done %}
+                            <i class="bi bi-check-circle-fill text-success"></i>
+                        {% else %}
+                            <i class="bi bi-x-circle text-muted"></i>
+                        {% endif %}
+                    </div>
+                    <h6 class="mb-0" style="font-weight: 700;">Word Embeddings</h6>
+                    <small class="text-muted">Step 4</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="stat-card-feature">
+                <div class="card-body text-center">
+                    <div class="mb-2">
+                        {% if step45_done %}
+                            <i class="bi bi-check-circle-fill text-success"></i>
+                        {% else %}
+                            <i class="bi bi-x-circle text-muted"></i>
+                        {% endif %}
+                    </div>
+                    <h6 class="mb-0" style="font-weight: 700;">PCA Reduction</h6>
+                    <small class="text-muted">Step 4.5</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="stat-card-feature">
+                <div class="card-body text-center">
+                    <div class="mb-2">
+                        {% if step5_done %}
+                            <i class="bi bi-check-circle-fill text-success"></i>
+                        {% else %}
+                            <i class="bi bi-x-circle text-muted"></i>
+                        {% endif %}
+                    </div>
+                    <h6 class="mb-0" style="font-weight: 700;">SVM Trained</h6>
+                    <small class="text-muted">Step 5</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="stat-card-feature">
+                <div class="card-body text-center" style="background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%); border-radius: 12px;">
+                    <h2 class="mb-0" style="color: #003d82; font-weight: 700; font-size: 2rem;">{{ total_features }}</h2>
+                    <h6 class="mb-0" style="font-weight: 700;">Total Features</h6>
+                    <small class="text-muted">Generated</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-4">
+            <div class="sentiment-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="rounded-circle p-3" style="background: rgba(40, 167, 69, 0.1);">
+                                <i class="bi bi-emoji-smile text-success" style="font-size: 1.5rem;"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h3 class="mb-0" style="font-weight: 700;">{{ positive_count }}</h3>
+                            <p class="text-muted mb-0">Positive</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="sentiment-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="rounded-circle p-3" style="background: rgba(220, 53, 69, 0.1);">
+                                <i class="bi bi-emoji-frown text-danger" style="font-size: 1.5rem;"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h3 class="mb-0" style="font-weight: 700;">{{ negative_count }}</h3>
+                            <p class="text-muted mb-0">Negative</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="sentiment-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="rounded-circle p-3" style="background: rgba(108, 117, 125, 0.1);">
+                                <i class="bi bi-emoji-neutral text-secondary" style="font-size: 1.5rem;"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h3 class="mb-0" style="font-weight: 700;">{{ neutral_count }}</h3>
+                            <p class="text-muted mb-0">Neutral</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="filter-card mb-3">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">
+                        <i class="bi bi-funnel"></i> Data Split
+                    </label>
+                    <select name="split" class="form-select">
+                        <option value="all" {% if current_split == "all" %}selected{% endif %}>All Data</option>
+                        <option value="train" {% if current_split == "train" %}selected{% endif %}>Training Set</option>
+                        <option value="test" {% if current_split == "test" %}selected{% endif %}>Testing Set</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">
+                        <i class="bi bi-emoji-smile"></i> Sentiment
+                    </label>
+                    <select name="sentiment" class="form-select">
+                        <option value="all" {% if current_sentiment == "all" %}selected{% endif %}>All Sentiment</option>
+                        <option value="positive" {% if current_sentiment == "positive" %}selected{% endif %}>✓ Positive</option>
+                        <option value="negative" {% if current_sentiment == "negative" %}selected{% endif %}>✗ Negative</option>
+                        <option value="neutral" {% if current_sentiment == "neutral" %}selected{% endif %}>− Neutral</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <button type="submit" class="btn w-100" style="background: linear-gradient(135deg, #003d82 0%, #0066cc 100%); color: white; font-weight: 600; border-radius: 8px;">
+                        <i class="bi bi-search"></i> Apply Filter
+                    </button>
+                </div>
+                
+                <div class="col-md-2">
+                    <a href="{% url 'core:feature_viewer' dataset.id %}" class="btn btn-outline-secondary w-100" style="border-radius: 8px; font-weight: 600;">
+                        <i class="bi bi-arrow-clockwise"></i> Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="feature-table-card">
+        <div class="card-header bg-white border-0 py-3" style="border-radius: 12px 12px 0 0;">
+            <h5 class="mb-0" style="font-weight: 700;">
+                <i class="bi bi-table"></i> Feature Vectors
+                <span class="badge bg-light text-dark ms-2">{{ features.paginator.count }} total</span>
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-feature table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th class="text-center" style="width: 50px;">#</th>
+                            <th style="min-width: 350px;">Tweet Content</th>
+                            <th class="text-center" style="width: 120px;">Label</th>
+                            <th class="text-center" style="width: 120px;">Split</th>
+                            <th class="text-center" style="width: 110px;">
+                                <i class="bi bi-gpu-card"></i> Embedding
+                            </th>
+                            <th class="text-center" style="width: 110px;">
+                                <i class="bi bi-diagram-2"></i> PCA
+                            </th>
+                            <th class="text-center" style="width: 100px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for feature in features %}
+                        <tr>
+                            <td class="text-center text-muted">
+                                <small><strong>{{ forloop.counter }}</strong></small>
+                            </td>
+
+                            <td>
+                                <div style="max-width: 450px; line-height: 1.4;">
+                                    {{ feature.tweet.text|truncatewords:20 }}
+                                </div>
+                            </td>
+
+                            <td class="text-center">
+                                {% if feature.tweet.label.sentiment == "positive" %}
+                                    <span class="badge-feature bg-success text-white">
+                                        <i class="bi bi-emoji-smile"></i> Positive
+                                    </span>
+                                {% elif feature.tweet.label.sentiment == "negative" %}
+                                    <span class="badge-feature bg-danger text-white">
+                                        <i class="bi bi-emoji-frown"></i> Negative
+                                    </span>
+                                {% else %}
+                                    <span class="badge-feature bg-secondary text-white">
+                                        <i class="bi bi-emoji-neutral"></i> Neutral
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <td class="text-center">
+                                {% if feature.tweet.label.dataset_split == "train" %}
+                                    <span class="badge-feature" style="background: rgba(0, 61, 130, 0.1); color: #003d82;">
+                                        <i class="bi bi-mortarboard"></i> Train
+                                    </span>
+                                {% else %}
+                                    <span class="badge-feature" style="background: rgba(0, 102, 204, 0.1); color: #0066cc;">
+                                        <i class="bi bi-clipboard-check"></i> Test
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <td class="text-center">
+                                {% if feature.embedding_dims > 0 %}
+                                    <div class="d-flex flex-column align-items-center gap-1">
+                                        <span class="badge-feature" style="background: linear-gradient(135deg, #003d82 0%, #0066cc 100%); color: white;">
+                                            {{ feature.embedding_dims }}D
+                                        </span>
+                                        <small class="text-muted" style="font-size: 0.7rem;">
+                                            Weighted
+                                        </small>
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted">
+                                        <i class="bi bi-dash-circle"></i>
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <td class="text-center">
+                                {% if feature.pca_dims > 0 %}
+                                    <div class="d-flex flex-column align-items-center gap-1">
+                                        <span class="badge-feature bg-success text-white">
+                                            {{ feature.pca_dims }}D
+                                        </span>
+                                        <small class="text-muted" style="font-size: 0.7rem;">
+                                            98% var
+                                        </small>
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted">
+                                        <i class="bi bi-dash-circle"></i>
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-primary"
+                                        onclick="showFeatureDetail({{ feature.id }})"
+                                        style="border-radius: 6px;">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-5">
+                                <div class="text-muted">
+                                    <i class="bi bi-inbox" style="font-size: 2.5rem;"></i>
+                                    <p class="mt-3 mb-1"><strong>No feature data available</strong></p>
+                                    <small>Run Step 4 (Generate Word Embeddings) first</small>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        {% if features.has_other_pages %}
+        <div class="card-footer bg-white border-0" style="border-radius: 0 0 12px 12px;">
+            <nav>
+                <ul class="pagination pagination-sm justify-content-center mb-0">
+                    {% if features.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1&split={{ current_split }}&sentiment={{ current_sentiment }}">
+                            <i class="bi bi-chevron-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ features.previous_page_number }}&split={{ current_split }}&sentiment={{ current_sentiment }}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    <li class="page-item active">
+                        <span class="page-link">
+                            {{ features.number }} / {{ features.paginator.num_pages }}
+                        </span>
+                    </li>
+
+                    {% if features.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ features.next_page_number }}&split={{ current_split }}&sentiment={{ current_sentiment }}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ features.paginator.num_pages }}&split={{ current_split }}&sentiment={{ current_sentiment }}">
+                            <i class="bi bi-chevron-double-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<div class="modal fade" id="featureModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header primary text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-code-square"></i> Feature Vector Detail
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="loadingSpinner" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Loading feature data...</p>
+                </div>
+                
+                <div id="featureContent" style="display: none;">
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <strong><i class="bi bi-twitter"></i> Tweet Information</strong>
+                        </div>
+                        <div class="card-body">
+                            <p id="tweetText" class="mb-2"></p>
+                            <div class="d-flex gap-3 text-muted small">
+                                <span><i class="bi bi-key"></i> ID: <span id="tweetId"></span></span>
+                                <span><i class="bi bi-calendar"></i> <span id="tweetDate"></span></span>
+                                <span><i class="bi bi-tag"></i> <span id="tweetSentiment"></span></span>
+                                <span><i class="bi bi-folder"></i> <span id="tweetSplit"></span></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <strong><i class="bi bi-emoji-smile"></i> Sentiment Features (3 dimensions)</strong>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label small text-muted">Sentiment Score</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-speedometer"></i></span>
+                                        <input type="text" class="form-control" id="sentimentScore" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small text-muted">Positive Score</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-plus-circle text-success"></i></span>
+                                        <input type="text" class="form-control" id="positiveScore" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small text-muted">Negative Score</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-dash-circle text-danger"></i></span>
+                                        <input type="text" class="form-control" id="negativeScore" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <strong><i class="bi bi-gpu-card"></i> Word Embedding (Weighted)</strong>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-2">
+                                <span class="badge-feature" style="background: linear-gradient(135deg, #003d82 0%, #0066cc 100%); color: white;" id="embeddingDim"></span>
+                                <span class="badge-feature bg-info text-white ms-2" id="embeddingMethod"></span>
+                            </div>
+                            <details class="mt-3">
+                                <summary class="text-primary" style="cursor: pointer;">
+                                    <i class="bi bi-chevron-right"></i> View full vector
+                                </summary>
+                                <pre id="embeddingVector" class="mt-2 p-3 bg-light" style="font-size: 11px; max-height: 300px; overflow-y: auto; border-radius: 8px;"></pre>
+                            </details>
+                        </div>
+                    </div>
+                    
+                    <div class="card mb-3" id="pcaCard" style="display: none;">
+                        <div class="card-header bg-light">
+                            <strong><i class="bi bi-diagram-2"></i> PCA Features</strong>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-2">
+                                <span class="badge-feature bg-success text-white" id="pcaDim"></span>
+                                <span class="badge-feature bg-warning text-dark ms-2" id="pcaVariance"></span>
+                            </div>
+                            <details class="mt-3">
+                                <summary class="text-success" style="cursor: pointer;">
+                                    <i class="bi bi-chevron-right"></i> View full vector
+                                </summary>
+                                <pre id="pcaVector" class="mt-2 p-3 bg-light" style="font-size: 11px; max-height: 300px; overflow-y: auto; border-radius: 8px;"></pre>
+                            </details>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="errorContent" style="display: none;">
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>Error:</strong> <span id="errorMessage"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle"></i> Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showFeatureDetail(featureId) {
+    const modal = new bootstrap.Modal(document.getElementById('featureModal'));
+    const spinner = document.getElementById('loadingSpinner');
+    const content = document.getElementById('featureContent');
+    const errorContent = document.getElementById('errorContent');
+    
+    spinner.style.display = 'block';
+    content.style.display = 'none';
+    errorContent.style.display = 'none';
+    modal.show();
+    
+    fetch(`/api/feature-detail/${featureId}/`)
+        .then(res => {
+            if (!res.ok) throw new Error('Network response was not ok');
+            return res.json();
+        })
+        .then(data => {
+            spinner.style.display = 'none';
+            
+            if (data.success) {
+                document.getElementById('tweetText').textContent = data.tweet.text;
+                document.getElementById('tweetId').textContent = data.tweet.id;
+                document.getElementById('tweetDate').textContent = data.tweet.created_at ? new Date(data.tweet.created_at).toLocaleDateString() : 'N/A';
+                document.getElementById('tweetSentiment').textContent = data.label.sentiment || 'N/A';
+                document.getElementById('tweetSplit').textContent = data.label.dataset_split || 'N/A';
+                
+                document.getElementById('sentimentScore').value = data.sentiment_features.sentiment_score.toFixed(4);
+                document.getElementById('positiveScore').value = data.sentiment_features.positive_score.toFixed(4);
+                document.getElementById('negativeScore').value = data.sentiment_features.negative_score.toFixed(4);
+                
+                if (data.word_embedding) {
+                    document.getElementById('embeddingDim').textContent = `${data.word_embedding.dimension} dimensions`;
+                    document.getElementById('embeddingMethod').textContent = data.word_embedding.method;
+                    document.getElementById('embeddingVector').textContent = JSON.stringify(data.word_embedding.vector_full, null, 2);
+                }
+                
+                if (data.pca_features) {
+                    document.getElementById('pcaCard').style.display = 'block';
+                    document.getElementById('pcaDim').textContent = `${data.pca_features.dimension} dimensions`;
+                    document.getElementById('pcaVariance').textContent = `${(data.pca_features.variance_explained * 100).toFixed(2)}% variance`;
+                    document.getElementById('pcaVector').textContent = JSON.stringify(data.pca_features.vector_full, null, 2);
+                } else {
+                    document.getElementById('pcaCard').style.display = 'none';
+                }
+                
+                content.style.display = 'block';
+            } else {
+                errorContent.style.display = 'block';
+                document.getElementById('errorMessage').textContent = data.message || 'Unknown error';
+            }
+        })
+        .catch(error => {
+            spinner.style.display = 'none';
+            errorContent.style.display = 'block';
+            document.getElementById('errorMessage').textContent = error.message;
+        });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,403 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Preliminary Check - {{ dataset.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.filter-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.page-header-filter {
+    background: linear-gradient(135deg, #0056b3 0%, #ffc107 100%);
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    color: white;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 30px rgba(0, 86, 179, 0.3);
+}
+
+.stats-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 2px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+
+.stats-card:hover {
+    border-color: #0056b3;
+    box-shadow: 0 4px 15px rgba(0, 86, 179, 0.1);
+}
+
+.keyword-input {
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e2e8f0;
+}
+
+.keyword-tag {
+    display: inline-block;
+    background: linear-gradient(135deg, #0056b3 0%, #007bff 100%);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    margin: 0.25rem;
+    font-size: 0.9rem;
+}
+
+.keyword-tag .remove-keyword {
+    cursor: pointer;
+    margin-left: 0.5rem;
+    opacity: 0.8;
+}
+
+.keyword-tag .remove-keyword:hover {
+    opacity: 1;
+}
+
+.preview-box {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-top: 1rem;
+    border-left: 4px solid #0056b3;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="py-3 filter-container">
+    <div class="page-header-filter">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h4><i class="bi bi-funnel"></i> Preliminary Check - Keyword Filter</h4>
+                <p class="mb-0" style="font-size: 0.95rem; opacity: 0.9;">
+                    <i class="bi bi-database"></i> Dataset: <strong>{{ dataset.name }}</strong>
+                </p>
+            </div>
+            <a href="{% url 'core:dataset_detail' dataset.id %}" class="btn btn-light">
+                <i class="bi bi-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics Overview -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="stats-card text-center">
+                <h6 class="text-muted mb-2">Total Tweets</h6>
+                <h3 class="mb-0" style="color: #0056b3;">{{ total_tweets }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card text-center">
+                <h6 class="text-muted mb-2">Checked</h6>
+                <h3 class="mb-0 text-success">{{ checked_count }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card text-center">
+                <h6 class="text-muted mb-2">Relevant</h6>
+                <h3 class="mb-0 text-info">{{ relevant_count }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card text-center">
+                <h6 class="text-muted mb-2">Not Relevant</h6>
+                <h3 class="mb-0 text-danger">{{ not_relevant_count }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Keyword Filter Card -->
+    <div class="card mb-4" style="border-radius: 12px; border: none; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+        <div class="card-header" style="background: linear-gradient(135deg, #0056b3 0%, #007bff 100%); color: white; border-radius: 12px 12px 0 0;">
+            <h5 class="mb-0"><i class="bi bi-filter-circle"></i> Step 1: Apply Keyword Filter</h5>
+        </div>
+        <div class="card-body">
+            <p class="text-muted mb-3">
+                <i class="bi bi-info-circle"></i> 
+                Enter keywords related to "{{ dataset.name }}". Tweets containing these keywords will be marked as relevant.
+            </p>
+
+            <div class="mb-3">
+                <label class="form-label"><strong>Add Keywords:</strong></label>
+                <div class="input-group">
+                    <input type="text" id="keywordInput" class="keyword-input form-control" 
+                           placeholder="Type keyword and press Enter (e.g., 'MBG', 'makan gratis', 'program prabowo')">
+                    <button class="btn btn-primary" onclick="addKeyword()">
+                        <i class="bi bi-plus-lg"></i> Add
+                    </button>
+                </div>
+            </div>
+
+            <div id="keywordList" class="mb-3"></div>
+
+            <div class="d-grid gap-2 d-md-flex">
+                <button id="btnPreview" class="btn btn-outline-primary flex-fill" onclick="previewFilter()">
+                    <i class="bi bi-eye"></i> Preview Results
+                </button>
+                <button id="btnApply" class="btn btn-primary flex-fill" onclick="applyFilter()" disabled>
+                    <i class="bi bi-check-circle"></i> Apply Filter
+                </button>
+            </div>
+
+            <div id="previewResults" class="preview-box" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Manual Check Card -->
+    <div class="card" style="border-radius: 12px; border: none; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+        <div class="card-header" style="background: linear-gradient(135deg, #17a2b8 0%, #20c997 100%); color: white; border-radius: 12px 12px 0 0;">
+            <h5 class="mb-0"><i class="bi bi-list-check"></i> Step 2: Manual Review ({{ total_unchecked }} pending)</h5>
+        </div>
+        <div class="card-body">
+            {% if total_unchecked > 0 %}
+                <div class="alert alert-info" style="border-radius: 10px;">
+                    <i class="bi bi-hourglass-split"></i>
+                    <strong>{{ total_unchecked }} tweets</strong> are waiting for manual review.
+                </div>
+                <div class="d-grid gap-2 d-md-flex">
+                    <a href="{% url 'core:preliminary_manual_check' dataset.id %}" class="btn btn-info flex-fill">
+                        <i class="bi bi-pencil-square"></i> Start Manual Review
+                    </a>
+                    <button onclick="skipPreliminary()" class="btn btn-warning flex-fill">
+                        <i class="bi bi-skip-end"></i> Skip All (Accept All as Relevant)
+                    </button>
+                </div>
+            {% else %}
+                <div class="alert alert-success" style="border-radius: 10px;">
+                    <i class="bi bi-check-circle"></i>
+                    <strong>All tweets have been reviewed!</strong> You can proceed to Sampling.
+                </div>
+                <div class="d-grid gap-2 d-md-flex">
+                    <a href="{% url 'core:sampling' dataset.id %}" class="btn btn-success flex-fill">
+                        <i class="bi bi-arrow-right-circle"></i> Proceed to Sampling
+                    </a>
+                    <button onclick="resetPreliminary()" class="btn btn-outline-danger flex-fill">
+                        <i class="bi bi-arrow-clockwise"></i> Reset Preliminary Check
+                    </button>
+                </div>
+            {% endif %}
+
+            <div class="mt-3">
+                <small class="text-muted">
+                    <i class="bi bi-info-circle"></i> 
+                    Progress: {{ checked_count }} / {{ total_tweets }} checked ({{ progress }}%)
+                </small>
+                <div class="progress mt-2" style="height: 8px; border-radius: 10px;">
+                    <div class="progress-bar bg-info" style="width: {{ progress }}%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="mt-3 d-flex gap-2">
+        <button onclick="exportResults()" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-download"></i> Export Results
+        </button>
+        <button onclick="resetPreliminary()" class="btn btn-sm btn-outline-danger">
+            <i class="bi bi-arrow-clockwise"></i> Reset All
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let keywords = [];
+
+function addKeyword() {
+    const input = document.getElementById('keywordInput');
+    const keyword = input.value.trim().toLowerCase();
+    
+    if (keyword && !keywords.includes(keyword)) {
+        keywords.push(keyword);
+        updateKeywordList();
+        input.value = '';
+    }
+}
+
+document.getElementById('keywordInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        addKeyword();
+    }
+});
+
+function removeKeyword(keyword) {
+    keywords = keywords.filter(k => k !== keyword);
+    updateKeywordList();
+}
+
+function updateKeywordList() {
+    const list = document.getElementById('keywordList');
+    if (keywords.length === 0) {
+        list.innerHTML = '<p class="text-muted"><i class="bi bi-info-circle"></i> No keywords added yet</p>';
+        document.getElementById('btnPreview').disabled = true;
+        document.getElementById('btnApply').disabled = true;
+        return;
+    }
+    
+    list.innerHTML = keywords.map(k => 
+        `<span class="keyword-tag">
+            ${k}
+            <span class="remove-keyword" onclick="removeKeyword('${k}')">×</span>
+        </span>`
+    ).join('');
+    
+    document.getElementById('btnPreview').disabled = false;
+}
+
+function previewFilter() {
+    if (keywords.length === 0) return;
+    
+    const btn = document.getElementById('btnPreview');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Loading...';
+    
+    fetch("{% url 'core:preview_keyword_filter' dataset.id %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ keywords: keywords })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const preview = document.getElementById('previewResults');
+            preview.innerHTML = `
+                <h6><i class="bi bi-bar-chart"></i> Preview Results:</h6>
+                <ul class="mb-0">
+                    <li><strong class="text-success">${data.relevant_count}</strong> tweets will be marked as <strong>relevant</strong> (contain keywords)</li>
+                    <li><strong class="text-danger">${data.not_relevant_count}</strong> tweets will be marked as <strong>not relevant</strong> (no keywords)</li>
+                    <li><strong class="text-muted">${data.unchanged_count}</strong> tweets already checked (unchanged)</li>
+                </ul>
+            `;
+            preview.style.display = 'block';
+            document.getElementById('btnApply').disabled = false;
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to preview: ' + error.message);
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-eye"></i> Preview Results';
+    });
+}
+
+function applyFilter() {
+    if (keywords.length === 0) return;
+    
+    if (!confirm(`Apply filter with ${keywords.length} keywords?\n\nThis will mark tweets as relevant/not relevant based on keyword matching.`)) {
+        return;
+    }
+    
+    const btn = document.getElementById('btnApply');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Applying...';
+    
+    fetch("{% url 'core:apply_keyword_filter' dataset.id %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ 
+            keywords: keywords,
+            mark_rest: true
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✓ ' + data.message);
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-check-circle"></i> Apply Filter';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to apply filter: ' + error.message);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-check-circle"></i> Apply Filter';
+    });
+}
+
+function skipPreliminary() {
+    if (!confirm('Skip preliminary check?\n\nAll unchecked tweets will be marked as RELEVANT.')) {
+        return;
+    }
+    
+    fetch("{% url 'core:skip_preliminary_check' dataset.id %}", {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✓ ' + data.message);
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    });
+}
+
+function resetPreliminary() {
+    if (!confirm('Reset preliminary check?\n\nThis will clear all relevance marks. You will need to re-check all tweets.')) {
+        return;
+    }
+    
+    fetch("{% url 'core:reset_preliminary_check' dataset.id %}", {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✓ ' + data.message);
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    });
+}
+
+function exportResults() {
+    window.location.href = "{% url 'core:export_preliminary_results' dataset.id %}";
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}

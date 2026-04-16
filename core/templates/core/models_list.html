@@ -1,0 +1,472 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load l10n %}
+
+{% block title %}Models List - GoFusion{% endblock %}
+
+{% block extra_css %}
+<style>
+.models-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.page-header-models {
+    background: linear-gradient(135deg, #003d82 0%, #0066cc 100%);
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    color: white;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 30px rgba(0, 61, 130, 0.3);
+}
+
+.page-header-models h2 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+}
+
+.page-header-models p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 0.95rem;
+}
+
+.model-card {
+    transition: all 0.3s ease;
+    border-left: 4px solid #dee2e6;
+}
+
+.model-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+}
+
+.model-active {
+    border-left-color: #28a745 !important;
+    background-color: #f8fff9;
+}
+
+.stat-card-models {
+    background: white;
+    border-radius: 12px;
+    padding: 1.2rem;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.stat-card-models:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+}
+
+.stat-card-models i {
+    font-size: 1.8rem;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0.5rem 0 0.3rem;
+}
+
+.stat-label {
+    color: #6c757d;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.accuracy-badge {
+    font-size: 1rem;
+    padding: 0.4rem 0.9rem;
+    border-radius: 20px;
+}
+
+.badge-extended {
+    background: linear-gradient(135deg, #003d82 0%, #0066cc 100%);
+    color: white;
+    padding: 0.3rem 0.7rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+}
+
+.model-actions .btn {
+    margin: 0 0.15rem;
+}
+
+.comparison-chart {
+    height: 300px;
+}
+
+.models-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+
+.models-card-header {
+    background: linear-gradient(135deg, #003d82 0%, #0066cc 100%);
+    color: white;
+    padding: 1rem 1.5rem;
+}
+
+.models-card-header h5 {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.chart-card-models {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+
+.chart-card-header-models {
+    background: linear-gradient(135deg, #0066cc 0%, #4facfe 100%);
+    color: white;
+    padding: 1rem 1.5rem;
+}
+
+.chart-card-header-models h5 {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.table-models {
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.table-models thead {
+    background: #f7fafc;
+    font-weight: 700;
+    color: #2d3748;
+}
+
+.table-models tbody tr {
+    transition: all 0.2s ease;
+}
+
+.table-models tbody tr:hover {
+    background: rgba(0, 61, 130, 0.03);
+}
+
+.empty-state-models {
+    text-align: center;
+    padding: 3rem 2rem;
+}
+
+.empty-state-models i {
+    font-size: 3rem;
+    color: #cbd5e0;
+    margin-bottom: 1rem;
+}
+
+.btn-back-models {
+    background: white;
+    border: 2px solid #e2e8f0;
+    color: #4a5568;
+    font-weight: 600;
+    border-radius: 10px;
+    padding: 0.7rem 1.3rem;
+}
+
+.btn-back-models:hover {
+    border-color: #003d82;
+    color: #003d82;
+}
+
+.modal-header.danger {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="py-3 models-container">
+    <div class="page-header-models">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2><i class="bi bi-cpu"></i> Models List</h2>
+                <p>Manage and compare sentiment analysis models</p>
+            </div>
+            <a href="{% url 'core:home' %}" class="btn btn-back-models">
+                <i class="bi bi-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-3">
+            <div class="stat-card-models">
+                <i class="bi bi-cpu text-primary"></i>
+                <div class="stat-value text-primary">{{ total_models }}</div>
+                <div class="stat-label">Total Models</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card-models">
+                <i class="bi bi-check-circle text-success"></i>
+                <div class="stat-value text-success">{{ active_models }}</div>
+                <div class="stat-label">Active Models</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card-models">
+                <i class="bi bi-graph-up text-success"></i>
+                <div class="stat-value text-success">
+                    {% if best_accuracy > 0 %}
+                        {{ best_accuracy|floatformat:2 }}%
+                    {% else %}
+                        0.00%
+                    {% endif %}
+                </div>
+                <div class="stat-label">Best Accuracy</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card-models">
+                <i class="bi bi-bar-chart text-info"></i>
+                <div class="stat-value text-info">
+                    {% if avg_accuracy > 0 %}
+                        {{ avg_accuracy|floatformat:2 }}%
+                    {% else %}
+                        0.00%
+                    {% endif %}
+                </div>
+                <div class="stat-label">Average Accuracy</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="models-card mb-3">
+        <div class="models-card-header">
+            <h5><i class="bi bi-list"></i> All Models</h5>
+        </div>
+        <div class="p-0">
+            {% if models %}
+            <div class="table-responsive">
+                <table class="table table-models table-hover">
+                    <thead>
+                        <tr>
+                            <th>Model Name</th>
+                            <th>Dataset</th>
+                            <th>Train Accuracy</th>
+                            <th>Test Accuracy</th>
+                            <th>Trained At</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for model in models %}
+                        <tr class="{% if model.is_active %}table-success{% endif %}">
+                            <td>
+                                <strong>{{ model.name }}</strong>
+
+                                {% if "extended" in model.name|lower %}
+                                    <span class="badge bg-info ms-2">
+                                        <i class="bi bi-stars"></i> Extended Dict
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-secondary ms-2">
+                                        Base Dict
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                <span class="badge bg-light text-dark">
+                                    {{ model.dataset.name }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge rounded-pill" style="background: linear-gradient(135deg, #003d82 0%, #0066cc 100%);">
+                                    {{ model.train_accuracy|floatformat:2 }}%
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge rounded-pill {% if model.test_accuracy >= model.train_accuracy %}bg-success{% else %}bg-warning{% endif %}">
+                                    {{ model.test_accuracy|floatformat:2 }}%
+                                </span>
+                            </td>
+                            <td>
+                                <small>{{ model.trained_at|date:"Y-m-d H:i" }}</small>
+                            </td>
+                            <td>
+                                {% if model.is_active %}
+                                <span class="badge bg-success">Active</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td class="model-actions">
+                                <a href="{% url 'core:model_detail' model.id %}" 
+                                   class="btn btn-sm btn-info" 
+                                   title="View Details">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                
+                                {% if not model.is_active %}
+                                <form method="POST" 
+                                      action="{% url 'core:set_active_model' model.id %}" 
+                                      style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" 
+                                            class="btn btn-sm btn-success" 
+                                            title="Set Active">
+                                        <i class="bi bi-check-circle"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                                
+                                <button type="button" 
+                                        class="btn btn-sm btn-danger"
+                                        onclick="confirmDelete({{ model.id }}, '{{ model.name }}')"
+                                        title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state-models">
+                <i class="bi bi-inbox"></i>
+                <p class="text-muted mt-3">No trained models yet</p>
+                <a href="{% url 'core:dataset_list' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Train Your First Model
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if models %}
+    <div class="chart-card-models">
+        <div class="chart-card-header-models">
+            <h5><i class="bi bi-bar-chart"></i> Model Comparison</h5>
+        </div>
+        <div class="p-3">
+            <canvas id="comparisonChart" class="comparison-chart"></canvas>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle"></i> Delete Model
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete model: <strong id="modelName"></strong>?</p>
+                <p class="text-danger mb-0">
+                    <i class="bi bi-warning"></i> This action cannot be undone.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Delete Model
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+function confirmDelete(modelId, modelName) {
+    document.getElementById('modelName').textContent = modelName;
+    document.getElementById('deleteForm').action = `/models/${modelId}/delete/`;
+    
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    modal.show();
+}
+
+{% if models %}
+const ctx = document.getElementById('comparisonChart').getContext('2d');
+const chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: [
+            {% for model in models %}
+            '{{ model.name|truncatechars:20 }}'{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ],
+        datasets: [
+            {
+                label: 'Train Accuracy',
+                data: [
+                    {% for model in models %}
+                    {{ model.train_accuracy|unlocalize }}{% if not forloop.last %},{% endif %}
+                    {% endfor %}
+                ],
+                backgroundColor: 'rgba(0, 61, 130, 0.7)',
+                borderColor: 'rgba(0, 61, 130, 1)',
+                borderWidth: 1
+            },
+            {
+                label: 'Test Accuracy',
+                data: [
+                    {% for model in models %}
+                    {{ model.test_accuracy|default:0|unlocalize }}{% if not forloop.last %},{% endif %}
+                    {% endfor %}
+                ],
+                backgroundColor: 'rgba(0, 102, 204, 0.7)',
+                borderColor: 'rgba(0, 102, 204, 1)',
+                borderWidth: 1
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 100,
+                ticks: {
+                    callback: function(value) {
+                        return value + '%';
+                    }
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                position: 'top',
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + '%';
+                    }
+                }
+            }
+        }
+    }
+});
+{% endif %}
+</script>
+{% endblock %}

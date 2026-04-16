@@ -1,0 +1,312 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Preliminary Manual Review - {{ dataset.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.manual-review-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.page-header-manual {
+    background: linear-gradient(135deg, #17a2b8 0%, #20c997 100%);
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    color: white;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 30px rgba(23, 162, 184, 0.3);
+}
+
+.progress-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 2px solid #e2e8f0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.table-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.table-card .card-header {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-bottom: 2px solid #dee2e6;
+    padding: 1rem 1.5rem;
+}
+
+.tweet-table {
+    margin-bottom: 0;
+}
+
+.tweet-table thead th {
+    background: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    color: #495057;
+    padding: 0.75rem 1rem;
+}
+
+.tweet-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.tweet-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.tweet-table tbody td {
+    padding: 0.75rem 1rem;
+    vertical-align: middle;
+}
+
+.action-bar {
+    background: white;
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    margin-top: 1.5rem;
+    border: 2px solid #e2e8f0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.btn-mark-not-relevant {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    border: none;
+    color: white;
+    padding: 0.5rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-mark-not-relevant:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+    color: white;
+}
+
+.btn-skip-all {
+    background: white;
+    border: 2px solid #ffc107;
+    color: #856404;
+    padding: 0.5rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-skip-all:hover {
+    background: #ffc107;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="py-3 manual-review-container">
+    <div class="page-header-manual">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h4><i class="bi bi-list-check"></i> Preliminary Manual Review</h4>
+                <p class="mb-0" style="font-size: 0.95rem; opacity: 0.9;">
+                    <i class="bi bi-database"></i> Dataset: <strong>{{ dataset.name }}</strong>
+                </p>
+            </div>
+            <a href="{% url 'core:preliminary_check' dataset.id %}" class="btn btn-light">
+                <i class="bi bi-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <div class="progress-card">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="mb-0"><i class="bi bi-hourglass-split"></i> Review Progress</h6>
+            <span class="badge bg-info" style="font-size: 1rem; padding: 0.5rem 1rem;">
+                {{ checked_count }} / {{ total_tweets }}
+            </span>
+        </div>
+        <div class="progress mb-2" style="height: 12px; border-radius: 10px;">
+            <div class="progress-bar bg-info" style="width: {{ progress }}%;"></div>
+        </div>
+        <small class="text-muted">
+            <i class="bi bi-clock-history"></i> {{ total_unchecked }} tweets remaining
+        </small>
+    </div>
+
+    <div class="card table-card">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">
+                    <i class="bi bi-table"></i> Tweets for Manual Review
+                </h6>
+                <small class="text-muted">
+                    Check only tweets that are <strong>NOT relevant</strong>
+                </small>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover tweet-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">
+                                <input type="checkbox" id="checkAll" class="form-check-input">
+                            </th>
+                            <th style="width: 100px;">ID</th>
+                            <th>Tweet</th>
+                            <th style="width: 180px;">Created</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for tweet in unchecked_tweets %}
+                        <tr>
+                            <td class="text-center">
+                                <input type="checkbox" 
+                                       class="form-check-input chk-not-relevant" 
+                                       value="{{ tweet.id }}">
+                            </td>
+                            <td class="text-muted">
+                                <small>{{ tweet.id }}</small>
+                            </td>
+                            <td style="white-space: normal;">
+                                {{ tweet.text }}
+                            </td>
+                            <td class="text-muted">
+                                <small>{{ tweet.created_at|date:"Y-m-d H:i" }}</small>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-5">
+                                <i class="bi bi-check-circle" style="font-size: 3rem; opacity: 0.3;"></i>
+                                <p class="mt-3 mb-0">No tweets to review</p>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="action-bar">
+        <div class="d-flex justify-content-between align-items-center">
+            <small class="text-muted">
+                <i class="bi bi-info-circle"></i>
+                Default: tweets are considered <strong class="text-success">Relevant</strong>
+            </small>
+
+            <div class="d-flex gap-2">
+                <button class="btn btn-mark-not-relevant" onclick="markSelected(false)">
+                    <i class="bi bi-x-circle"></i> Mark Not Relevant
+                </button>
+
+                <button class="btn btn-skip-all" onclick="skipAll()">
+                    <i class="bi bi-skip-end"></i> Skip All
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {% if has_next_page %}
+    <div class="text-center mt-4">
+        <a href="?page={{ page|add:1 }}" class="btn btn-primary" style="border-radius: 10px; padding: 0.75rem 2rem;">
+            Load More <i class="bi bi-arrow-right"></i>
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('checkAll')?.addEventListener('change', function() {
+    document.querySelectorAll('.chk-not-relevant')
+        .forEach(cb => cb.checked = this.checked);
+});
+
+function markSelected(isRelevant) {
+    const checked = document.querySelectorAll('.chk-not-relevant:checked');
+    if (checked.length === 0) {
+        alert('⚠️ No tweets selected');
+        return;
+    }
+
+    const ids = Array.from(checked).map(cb => cb.value);
+
+    fetch("{% url 'core:bulk_mark_relevance' dataset.id %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            tweet_ids: ids,
+            is_relevant: isRelevant
+        })
+    })
+    .then(r => r.json())
+    .then(d => {
+        if (d.success) {
+            location.reload();
+        } else {
+            alert('Error: ' + d.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to mark tweets: ' + error.message);
+    });
+}
+
+function skipAll() {
+    if (!confirm('Skip all remaining tweets?\n\nAll unchecked tweets will be marked as RELEVANT.')) {
+        return;
+    }
+
+    fetch("{% url 'core:skip_preliminary_check' dataset.id %}", {
+        method: 'POST',
+        headers: { 
+            'X-CSRFToken': getCookie('csrftoken') 
+        }
+    })
+    .then(r => r.json())
+    .then(d => {
+        if (d.success) {
+            alert('✓ ' + d.message);
+            location.reload();
+        } else {
+            alert('Error: ' + d.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to skip: ' + error.message);
+    });
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}

@@ -1,0 +1,681 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}Manual Labeling - {{ dataset.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.labeling-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.page-header-labeling {
+    background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    color: white;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 30px rgba(220, 53, 69, 0.3);
+}
+
+.page-header-labeling h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+}
+
+.page-header-labeling p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 0.95rem;
+}
+
+.table-labeling {
+    font-size: 0.9rem;
+}
+
+.table-labeling th {
+    position: sticky;
+    top: 0;
+    background: linear-gradient(135deg, #003d82 0%, #0066cc 100%);
+    color: white;
+    z-index: 10;
+    font-weight: 700;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 12px;
+}
+
+.table-labeling tbody tr {
+    transition: all 0.2s ease;
+    vertical-align: middle;
+}
+
+.table-labeling tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.table-labeling tbody tr.active-row {
+    background-color: #e7f3ff;
+    box-shadow: 0 0 0 2px #003d82;
+}
+
+.table-labeling tbody tr.has-selection {
+    background-color: #f0fff4;
+}
+
+.row-number {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #003d82;
+}
+
+.tweet-text {
+    max-height: 100px;
+    overflow-y: auto;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    padding: 4px 0;
+}
+
+.tweet-username {
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin-bottom: 6px;
+}
+
+.token-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    margin: 2px;
+    background-color: #e3f2fd;
+    border: 1px solid #90caf9;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    font-family: 'Courier New', monospace;
+    color: #1565c0;
+}
+
+.tokens-container {
+    max-height: 100px;
+    overflow-y: auto;
+    padding: 2px;
+}
+
+.sentiment-radio {
+    display: none;
+}
+
+.sentiment-group {
+    display: flex;
+    flex-direction: row;
+    gap: 6px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.sentiment-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px;
+    border: 2px solid #dee2e6;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 600;
+    font-size: 0.8rem;
+    min-width: 85px;
+    text-align: center;
+}
+
+.sentiment-label:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.sentiment-label.positive {
+    border-color: #28a745;
+    color: #28a745;
+}
+
+.sentiment-radio:checked + .sentiment-label.positive {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    border-color: #28a745;
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.sentiment-label.neutral {
+    border-color: #6c757d;
+    color: #6c757d;
+}
+
+.sentiment-radio:checked + .sentiment-label.neutral {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    color: white;
+    border-color: #6c757d;
+    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+}
+
+.sentiment-label.negative {
+    border-color: #dc3545;
+    color: #dc3545;
+}
+
+.sentiment-radio:checked + .sentiment-label.negative {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+    border-color: #dc3545;
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.sentiment-label i {
+    font-size: 1rem;
+    margin-right: 4px;
+}
+
+.kbd-badge {
+    display: inline-block;
+    background: rgba(0,0,0,0.15);
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 0.65rem;
+    margin-left: 4px;
+    font-family: monospace;
+    font-weight: bold;
+}
+
+.sentiment-radio:checked + .sentiment-label .kbd-badge {
+    background: rgba(255,255,255,0.4);
+}
+
+.progress-enhanced {
+    height: 25px;
+    border-radius: 15px;
+    background: #e9ecef;
+}
+
+.progress-bar-enhanced {
+    background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+    transition: width 0.5s ease;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.progress-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    border: none;
+    margin-bottom: 1.5rem;
+}
+
+.alert-labeling {
+    border-radius: 12px;
+    border: none;
+    padding: 1.2rem;
+    margin-bottom: 1.5rem;
+}
+
+.alert-labeling.info {
+    background: linear-gradient(135deg, #e7f3ff 0%, #f0f7ff 100%);
+    color: #004085;
+}
+
+.alert-labeling.success {
+    background: linear-gradient(135deg, #d4edda 0%, #e8f5e9 100%);
+    color: #155724;
+}
+
+.labeling-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    border: none;
+}
+
+.labeling-card-header {
+    background: linear-gradient(135deg, #003d82 0%, #0066cc 100%);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 12px 12px 0 0;
+}
+
+.labeling-card-header h5 {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.btn-save-labeling {
+    background: linear-gradient(135deg, #28a745 0%, #38ef7d 100%);
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 0.8rem 2rem;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.btn-save-labeling:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+    color: white;
+}
+
+.btn-save-labeling i {
+    color: #fdb714;
+}
+
+.btn-back-labeling {
+    background: white;
+    color: #6c757d;
+    border: 2px solid #e2e8f0;
+    font-weight: 600;
+    border-radius: 10px;
+    padding: 0.7rem 1.3rem;
+}
+
+.btn-back-labeling:hover {
+    border-color: #003d82;
+    color: #003d82;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="py-3 labeling-container">
+    <div class="page-header-labeling">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1><i class="bi bi-tags-fill"></i> Manual Labeling</h1>
+                <p>
+                    <strong>{{ dataset.name }}</strong> • Training Set • Page {{ labels.number }} of {{ labels.paginator.num_pages }}
+                </p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{% url 'core:labeled_tweets_list' dataset.id %}" class="btn btn-info">
+                    <i class="bi bi-list-check"></i> View Labeled
+                </a>
+                <a href="{% url 'core:dataset_detail' dataset.id %}" class="btn btn-back-labeling">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="progress-card">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h5 class="mb-2" style="font-size: 1.1rem;">
+                        <i class="bi bi-graph-up-arrow text-primary"></i> Progress: 
+                        <strong class="text-primary">{{ labeled_count }}</strong> / {{ total_labels }}
+                        <span class="text-muted">({{ progress_percentage }}%)</span>
+                    </h5>
+                    <div class="progress-enhanced">
+                        <div class="progress-bar progress-bar-striped progress-bar-enhanced" 
+                             style="width: {{ progress_percentage }}%;">
+                            {{ progress_percentage }}%
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <div class="badge bg-warning text-dark" style="font-size: 1.3rem; padding: 0.6rem 1.2rem;">
+                        {{ unlabeled_count }} Remaining
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="alert-labeling info">
+        <div class="d-flex align-items-center">
+            <div class="me-3" style="font-size: 1.5rem;">
+                <i class="bi bi-keyboard-fill"></i>
+            </div>
+            <div>
+                <strong>⚡ Keyboard Shortcuts:</strong>
+                <div class="mt-2" style="font-size: 0.9rem;">
+                    <kbd>1</kbd> or <kbd>P</kbd> = Positive &nbsp;&nbsp;
+                    <kbd>2</kbd> or <kbd>U</kbd> = Neutral &nbsp;&nbsp;
+                    <kbd>3</kbd> or <kbd>N</kbd> = Negative &nbsp;&nbsp;
+                    <kbd>↓</kbd> = Next &nbsp;&nbsp;
+                    <kbd>↑</kbd> = Previous &nbsp;&nbsp;
+                    <kbd>Ctrl+S</kbd> = Save Batch
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if unlabeled_count == 0 and total_labels > 0 %}
+    <div class="alert-labeling success">
+        <div class="text-center">
+            <h3 class="mb-3">
+                <i class="bi bi-check-circle-fill text-success" style="font-size: 2.5rem;"></i>
+            </h3>
+            <h4 style="font-size: 1.5rem;"><strong>All Tweets Labeled!</strong></h4>
+            <p class="mb-3">Successfully labeled <strong>{{ total_labels }}</strong> tweets!</p>
+            <a href="{% url 'core:training_dashboard' dataset.id %}" class="btn btn-save-labeling btn-lg">
+                <i class="bi bi-lightning-fill"></i> Start Training Now
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if unlabeled_count > 0 or labeled_count > 0 %}
+    <form id="labelingForm">
+        <div class="labeling-card">
+            <div class="labeling-card-header">
+                <h5>
+                    <i class="bi bi-tags-fill"></i> 
+                    Batch Labeling - {{ labels|length }} Tweets
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-labeling mb-0">
+                        <thead>
+                            <tr>
+                                <th width="50" class="text-center">#</th>
+                                <th width="42%">Tweet Text</th>
+                                <th width="33%">Cleaned Tokens</th>
+                                <th width="25%">Sentiment</th>
+                            </tr>
+                        </thead>
+                        <tbody id="labelingTableBody">
+                            {% for label in labels %}
+                            <tr data-row-index="{{ forloop.counter0 }}" 
+                                data-label-id="{{ label.id }}"
+                                data-tweet-id="{{ label.tweet.id }}"
+                                class="{% if label.sentiment %}has-selection{% endif %}">
+                                
+                                <td class="text-center">
+                                    <span class="row-number">{{ forloop.counter }}</span>
+                                </td>
+                                
+                                <td>
+                                    <div class="tweet-username">
+                                        <i class="bi bi-person-circle"></i> 
+                                        @{{ label.tweet.username|default:"unknown" }}
+                                    </div>
+                                    <div class="tweet-text">
+                                        {{ label.tweet.text }}
+                                    </div>
+                                </td>
+                                
+                                <td>
+                                    {% if label.tweet.preprocessed and label.tweet.preprocessed.tokens %}
+                                    <div class="tokens-container">
+                                        {% for token in label.tweet.preprocessed.tokens %}
+                                        <span class="token-badge">{{ token }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    {% else %}
+                                    <small class="text-muted">No tokens</small>
+                                    {% endif %}
+                                </td>
+                                
+                                <td>
+                                    <div class="sentiment-group">
+                                        <div>
+                                            <input type="radio" 
+                                                   class="sentiment-radio" 
+                                                   name="sentiment_{{ label.id }}" 
+                                                   id="positive_{{ label.id }}" 
+                                                   value="positive"
+                                                   data-label-id="{{ label.id }}"
+                                                   data-tweet-id="{{ label.tweet.id }}"
+                                                   {% if label.sentiment == 'positive' %}checked{% endif %}
+                                                   onchange="markAsSelected(this)">
+                                            <label class="sentiment-label positive" for="positive_{{ label.id }}">
+                                                <i class="bi bi-emoji-smile-fill"></i>
+                                                <span>Positive</span>
+                                                <span class="kbd-badge">1</span>
+                                            </label>
+                                        </div>
+
+                                        <div>
+                                            <input type="radio" 
+                                                   class="sentiment-radio" 
+                                                   name="sentiment_{{ label.id }}" 
+                                                   id="neutral_{{ label.id }}" 
+                                                   value="neutral"
+                                                   data-label-id="{{ label.id }}"
+                                                   data-tweet-id="{{ label.tweet.id }}"
+                                                   {% if label.sentiment == 'neutral' %}checked{% endif %}
+                                                   onchange="markAsSelected(this)">
+                                            <label class="sentiment-label neutral" for="neutral_{{ label.id }}">
+                                                <i class="bi bi-emoji-neutral-fill"></i>
+                                                <span>Neutral</span>
+                                                <span class="kbd-badge">2</span>
+                                            </label>
+                                        </div>
+
+                                        <div>
+                                            <input type="radio" 
+                                                   class="sentiment-radio" 
+                                                   name="sentiment_{{ label.id }}" 
+                                                   id="negative_{{ label.id }}" 
+                                                   value="negative"
+                                                   data-label-id="{{ label.id }}"
+                                                   data-tweet-id="{{ label.tweet.id }}"
+                                                   {% if label.sentiment == 'negative' %}checked{% endif %}
+                                                   onchange="markAsSelected(this)">
+                                            <label class="sentiment-label negative" for="negative_{{ label.id }}">
+                                                <i class="bi bi-emoji-frown-fill"></i>
+                                                <span>Negative</span>
+                                                <span class="kbd-badge">3</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="card-footer bg-light">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted">
+                            <i class="bi bi-info-circle"></i> 
+                            Selected: <strong id="selectedCount">0</strong> / {{ labels|length }}
+                        </span>
+                    </div>
+                    <button type="submit" class="btn btn-save-labeling" id="saveBatchBtn">
+                        <i class="bi bi-save-fill"></i> Save Batch
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    {% if labels.has_previous or labels.has_next %}
+    <nav class="mt-3">
+        <ul class="pagination pagination-lg justify-content-center">
+            {% if labels.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ labels.previous_page_number }}">
+                    <i class="bi bi-chevron-left"></i> Previous
+                </a>
+            </li>
+            {% endif %}
+            
+            <li class="page-item active">
+                <span class="page-link">
+                    Page {{ labels.number }} of {{ labels.paginator.num_pages }}
+                </span>
+            </li>
+            
+            {% if labels.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ labels.next_page_number }}">
+                    Next <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentRowIndex = 0;
+const rows = document.querySelectorAll('#labelingTableBody tr');
+
+document.addEventListener('DOMContentLoaded', function() {
+    if (rows.length > 0) {
+        highlightRow(0);
+    }
+    updateSelectedCount();
+});
+
+function markAsSelected(radioElement) {
+    const row = radioElement.closest('tr');
+    row.classList.add('has-selection');
+    updateSelectedCount();
+}
+
+function updateSelectedCount() {
+    const selectedRadios = document.querySelectorAll('.sentiment-radio:checked');
+    document.getElementById('selectedCount').textContent = selectedRadios.length;
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        return;
+    }
+
+    const currentRow = rows[currentRowIndex];
+    if (!currentRow) return;
+
+    const labelId = currentRow.dataset.labelId;
+
+    if (e.key === '1' || e.key.toLowerCase() === 'p') {
+        e.preventDefault();
+        const radio = document.getElementById(`positive_${labelId}`);
+        if (radio) radio.click();
+    } else if (e.key === '2' || e.key.toLowerCase() === 'u') {
+        e.preventDefault();
+        const radio = document.getElementById(`neutral_${labelId}`);
+        if (radio) radio.click();
+    } else if (e.key === '3' || e.key.toLowerCase() === 'n') {
+        e.preventDefault();
+        const radio = document.getElementById(`negative_${labelId}`);
+        if (radio) radio.click();
+    }
+    else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        moveToRow(currentRowIndex + 1);
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        moveToRow(currentRowIndex - 1);
+    }
+    else if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+        document.getElementById('labelingForm').dispatchEvent(new Event('submit'));
+    }
+});
+
+function moveToRow(index) {
+    if (index < 0 || index >= rows.length) return;
+    
+    rows[currentRowIndex].classList.remove('active-row');
+    currentRowIndex = index;
+    highlightRow(currentRowIndex);
+}
+
+function highlightRow(index) {
+    rows[index].classList.add('active-row');
+    rows[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+document.getElementById('labelingForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const labels = [];
+    document.querySelectorAll('.sentiment-radio:checked').forEach(radio => {
+        labels.push({
+            label_id: radio.dataset.labelId,
+            tweet_id: radio.dataset.tweetId,
+            sentiment: radio.value
+        });
+    });
+    
+    if (labels.length === 0) {
+        alert('⚠️ Please select at least one sentiment.');
+        return;
+    }
+    
+    if (!confirm(`Save ${labels.length} label(s)?`)) {
+        return;
+    }
+    
+    const btn = document.getElementById('saveBatchBtn');
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+    
+    fetch("{% url 'core:save_label_batch' dataset.id %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ labels: labels })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert(`✅ Saved ${data.saved_count} label(s)!`);
+            
+            {% if labels.has_next %}
+                location.href = '?page={{ labels.next_page_number }}';
+            {% else %}
+                if ({{ labeled_count }} + labels.length >= {{ total_labels }}) {
+                    if (confirm('🎉 All done! Start training?')) {
+                        location.href = "{% url 'core:training_dashboard' dataset.id %}";
+                    } else {
+                        location.reload();
+                    }
+                } else {
+                    location.reload();
+                }
+            {% endif %}
+        } else {
+            alert('❌ ' + data.message);
+            btn.disabled = false;
+            btn.innerHTML = originalHTML;
+        }
+    })
+    .catch(err => {
+        alert('❌ Error: ' + err.message);
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+    });
+});
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}

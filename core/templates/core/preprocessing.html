@@ -1,0 +1,888 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Preprocessing - {{ dataset.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+    --primary-gradient: linear-gradient(135deg, #003d82 0%, #0066cc 100%);
+    --success-gradient: linear-gradient(135deg, #28a745 0%, #38ef7d 100%);
+    --info-gradient: linear-gradient(135deg, #0066cc 0%, #4facfe 100%);
+    --accent-gold: #fdb714;
+}
+
+.page-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1.5rem;
+}
+
+.page-header {
+    background: var(--primary-gradient);
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    color: white;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 30px rgba(0, 61, 130, 0.3);
+}
+
+.page-header h2 {
+    font-weight: 700;
+    font-size: 1.8rem;
+    margin-bottom: 0.3rem;
+}
+
+.page-header .subtitle {
+    opacity: 0.9;
+    font-size: 0.95rem;
+}
+
+.stats-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    height: 100%;
+}
+
+.stats-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+    border-color: #003d82;
+}
+
+.stats-icon {
+    width: 55px;
+    height: 55px;
+    margin: 0 auto 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    font-size: 1.6rem;
+}
+
+.stats-icon.primary {
+    background: var(--primary-gradient);
+    color: white;
+}
+
+.stats-icon.success {
+    background: var(--success-gradient);
+    color: white;
+}
+
+.stats-icon.info {
+    background: var(--info-gradient);
+    color: white;
+}
+
+.stats-value {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.stats-label {
+    color: #6c757d;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.progress-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
+.progress-modern {
+    height: 25px;
+    border-radius: 50px;
+    background: #f0f2f5;
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.progress-bar-modern {
+    background: var(--primary-gradient);
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: width 0.5s ease;
+    border-radius: 50px;
+}
+
+.main-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    height: 100%;
+}
+
+.card-title-modern {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.card-title-modern i {
+    font-size: 1.3rem;
+    color: var(--accent-gold);
+}
+
+.config-option {
+    background: linear-gradient(135deg, #f5f7fa 0%, #e2e8f0 100%);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 0.8rem;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.config-option:hover {
+    border-color: #003d82;
+    transform: translateX(5px);
+}
+
+.form-switch .form-check-input {
+    width: 2.8rem;
+    height: 1.4rem;
+    cursor: pointer;
+}
+
+.form-switch .form-check-input:checked {
+    background-color: #003d82;
+    border-color: #003d82;
+}
+
+.btn-modern {
+    padding: 0.8rem 1.8rem;
+    font-weight: 600;
+    border-radius: 10px;
+    border: none;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
+
+.btn-modern-primary {
+    background: var(--primary-gradient);
+    color: white;
+}
+
+.btn-modern-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 61, 130, 0.4);
+    color: white;
+}
+
+.btn-modern-primary i {
+    color: var(--accent-gold);
+}
+
+.btn-modern-success {
+    background: var(--success-gradient);
+    color: white;
+}
+
+.btn-modern-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+}
+
+.btn-modern-outline {
+    background: white;
+    color: #003d82;
+    border: 2px solid #003d82;
+}
+
+.btn-modern-outline:hover {
+    background: #003d82;
+    color: white;
+}
+
+.alert-modern {
+    border-radius: 10px;
+    border: none;
+    padding: 1rem;
+    margin-bottom: 0.8rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.alert-modern i {
+    font-size: 1.1rem;
+    margin-right: 0.5rem;
+}
+
+.timeline-modern {
+    position: relative;
+    padding-left: 35px;
+}
+
+.timeline-modern::before {
+    content: '';
+    position: absolute;
+    left: 13px;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--primary-gradient);
+}
+
+.timeline-item-modern {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.timeline-marker-modern {
+    position: absolute;
+    left: -28px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: white;
+    border: 3px solid #003d82;
+    box-shadow: 0 0 0 3px rgba(0, 61, 130, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.7rem;
+    color: #003d82;
+}
+
+.timeline-content-modern {
+    background: linear-gradient(135deg, #f5f7fa 0%, #e2e8f0 100%);
+    padding: 1rem;
+    border-radius: 10px;
+    border-left: 3px solid #003d82;
+    transition: all 0.3s ease;
+}
+
+.timeline-content-modern:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.timeline-content-modern h6 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 0.3rem;
+}
+
+.timeline-content-modern p {
+    color: #718096;
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+.step-badge {
+    background: var(--primary-gradient);
+    color: white;
+    padding: 0.25rem 0.7rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.loading-overlay-modern {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    backdrop-filter: blur(10px);
+}
+
+.loading-overlay-modern.show {
+    display: flex;
+}
+
+.loading-content {
+    text-align: center;
+    max-width: 500px;
+    padding: 2rem;
+}
+
+.spinner-large {
+    width: 4rem;
+    height: 4rem;
+    border-width: 0.4rem;
+    border-color: #003d82;
+    border-right-color: transparent;
+}
+
+.timer-badge-modern {
+    display: inline-block;
+    font-size: 1.8rem;
+    padding: 0.8rem 1.8rem;
+    border-radius: 50px;
+    background: var(--primary-gradient);
+    color: white;
+    box-shadow: 0 6px 25px rgba(0, 61, 130, 0.5);
+    font-weight: 700;
+    margin: 1.2rem 0;
+}
+
+.progress-info-card {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 1.2rem;
+    margin: 1.2rem 0;
+    backdrop-filter: blur(10px);
+}
+
+.progress-info-item {
+    text-align: center;
+}
+
+.progress-info-label {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.4rem;
+}
+
+.progress-info-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: white;
+}
+
+.loading-progress-bar {
+    height: 25px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50px;
+    overflow: hidden;
+    margin: 1.2rem 0;
+}
+
+.loading-progress-fill {
+    height: 100%;
+    background: var(--success-gradient);
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 0.85rem;
+    transition: width 0.5s ease;
+}
+
+@media (max-width: 768px) {
+    .page-container {
+        padding: 1rem;
+    }
+    
+    .stats-value {
+        font-size: 1.6rem;
+    }
+    
+    .timeline-modern {
+        padding-left: 25px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2><i class="bi bi-magic"></i> Text Preprocessing</h2>
+                <p class="subtitle mb-0">Dataset: <strong>{{ dataset.name }}</strong></p>
+            </div>
+            <a href="{% url 'core:dataset_detail' dataset.id %}" class="btn btn-modern-outline">
+                <i class="bi bi-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-4">
+            <div class="stats-card">
+                <div class="stats-icon primary">
+                    <i class="bi bi-file-text"></i>
+                </div>
+                <div class="stats-value">{{ total_tweets }}</div>
+                <div class="stats-label">Total Tweets</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stats-card">
+                <div class="stats-icon success">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <div class="stats-value" id="processedCount">{{ preprocessed_count }}</div>
+                <div class="stats-label">Preprocessed</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stats-card">
+                <div class="stats-icon info">
+                    <i class="bi bi-graph-up"></i>
+                </div>
+                <div class="stats-value" id="progressPercent">{{ progress }}%</div>
+                <div class="stats-label">Progress</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="progress-section">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="mb-0 fw-bold" style="font-size: 0.95rem;">
+                <i class="bi bi-hourglass-split"></i> Processing Status
+            </h6>
+            <span class="badge step-badge" id="progressBadge">{{ progress }}%</span>
+        </div>
+        <div class="progress-modern">
+            <div id="progressBar" 
+                 class="progress-bar-modern" 
+                 style="width: {{ progress }}%;">
+                {{ progress }}%
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        
+        <div class="col-lg-5">
+            <div class="main-card">
+                <h5 class="card-title-modern">
+                    <i class="bi bi-gear-fill"></i> Configuration
+                </h5>
+
+                {% if progress < 100 %}
+                <div id="statusMessage" class="alert alert-modern alert-info">
+                    <i class="bi bi-info-circle-fill"></i>
+                    <strong>Ready to Process</strong><br>
+                    <small>{{ total_tweets }} tweets will be preprocessed with the selected options</small>
+                </div>
+
+                <form method="post" id="preprocessForm">
+                    {% csrf_token %}
+                    
+                    <div class="config-option">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" 
+                                   type="checkbox" 
+                                   name="use_stemming" 
+                                   id="stemming" 
+                                   checked>
+                            <label class="form-check-label" for="stemming">
+                                <strong class="d-block mb-1" style="font-size: 0.95rem;">Enable Stemming</strong>
+                                <small class="text-muted" style="font-size: 0.85rem;">
+                                    Uses Sastrawi stemmer to reduce words to root form
+                                </small>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-3">
+                        <button type="submit" 
+                                id="startBtn" 
+                                class="btn btn-modern btn-modern-primary">
+                            <i class="bi bi-play-fill"></i> Start Preprocessing
+                        </button>
+                    </div>
+                </form>
+
+                {% else %}
+                <div class="alert alert-modern alert-success">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <strong>Processing Complete!</strong><br>
+                    <small>All {{ total_tweets }} tweets have been successfully preprocessed</small>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <a href="{% url 'core:preprocessing_visualizer' dataset.id %}" 
+                       class="btn btn-modern btn-modern-outline">
+                        <i class="bi bi-eye"></i> View Results
+                    </a>
+                    <a href="{% url 'core:preliminary_check' dataset.id %}" 
+                       class="btn btn-modern btn-modern-success">
+                        <i class="bi bi-arrow-right"></i> Continue to Preliminary Check
+                    </a>
+                </div>
+                {% endif %}
+
+                <div class="alert alert-modern alert-warning mt-3 mb-0">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <strong>Please Note:</strong><br>
+                    <small>Processing may take 8-12 minutes for large datasets (10k+ tweets)</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="main-card">
+                <h5 class="card-title-modern">
+                    <i class="bi bi-list-check"></i> Preprocessing Pipeline
+                </h5>
+
+                <div class="timeline-modern">
+                    
+                    <div class="timeline-item-modern">
+                        <div class="timeline-marker-modern">1</div>
+                        <div class="timeline-content-modern">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6><i class="bi bi-link-45deg"></i> Clean Social Media Elements</h6>
+                                    <p>Remove URLs, @mentions, and #hashtags</p>
+                                </div>
+                                <span class="step-badge">Step 1</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item-modern">
+                        <div class="timeline-marker-modern">2</div>
+                        <div class="timeline-content-modern">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6><i class="bi bi-asterisk"></i> Remove Punctuation</h6>
+                                    <p>Strip special characters and symbols</p>
+                                </div>
+                                <span class="step-badge">Step 2</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item-modern">
+                        <div class="timeline-marker-modern">3</div>
+                        <div class="timeline-content-modern">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6><i class="bi bi-hash"></i> Remove Numbers</h6>
+                                    <p>Filter out all numeric values</p>
+                                </div>
+                                <span class="step-badge">Step 3</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item-modern">
+                        <div class="timeline-marker-modern">4</div>
+                        <div class="timeline-content-modern">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6><i class="bi bi-justify"></i> Normalize Whitespace</h6>
+                                    <p>Remove extra spaces between words</p>
+                                </div>
+                                <span class="step-badge">Step 4</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item-modern">
+                        <div class="timeline-marker-modern">5</div>
+                        <div class="timeline-content-modern">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6><i class="bi bi-fonts"></i> Case Folding</h6>
+                                    <p>Convert all text to lowercase</p>
+                                </div>
+                                <span class="step-badge">Step 5</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item-modern">
+                        <div class="timeline-marker-modern">6</div>
+                        <div class="timeline-content-modern">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6><i class="bi bi-translate"></i> Slang Normalization</h6>
+                                    <p>Convert informal words to formal Indonesian</p>
+                                </div>
+                                <span class="step-badge">Step 6</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item-modern">
+                        <div class="timeline-marker-modern">7</div>
+                        <div class="timeline-content-modern">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6><i class="bi bi-filter"></i> Remove Stopwords</h6>
+                                    <p>Filter common Indonesian words (dan, yang, di, dll)</p>
+                                </div>
+                                <span class="step-badge">Step 7</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item-modern">
+                        <div class="timeline-marker-modern">8</div>
+                        <div class="timeline-content-modern">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6><i class="bi bi-scissors"></i> Stemming (Optional)</h6>
+                                    <p>Reduce words to root form using Sastrawi</p>
+                                </div>
+                                <span class="step-badge bg-success">Optional</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item-modern mb-0">
+                        <div class="timeline-marker-modern">9</div>
+                        <div class="timeline-content-modern">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6><i class="bi bi-segmented-nav"></i> Tokenization</h6>
+                                    <p>Split into individual words (min 3 characters)</p>
+                                </div>
+                                <span class="step-badge">Step 9</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="loadingOverlay" class="loading-overlay-modern">
+    <div class="loading-content">
+        <div class="spinner-border spinner-large text-light mb-3" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        
+        <h3 class="text-white fw-bold mb-2" style="font-size: 1.5rem;">Processing Tweets...</h3>
+        
+        <div class="timer-badge-modern">
+            <i class="bi bi-stopwatch"></i> 
+            <span id="timerDisplay">00:00</span>
+        </div>
+        
+        <div class="progress-info-card">
+            <div class="row g-3">
+                <div class="col-4">
+                    <div class="progress-info-item">
+                        <div class="progress-info-label">Total</div>
+                        <div class="progress-info-value" id="totalTweets">{{ total_tweets }}</div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="progress-info-item">
+                        <div class="progress-info-label">Processed</div>
+                        <div class="progress-info-value text-success" id="processedTweets">0</div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="progress-info-item">
+                        <div class="progress-info-label">Speed</div>
+                        <div class="progress-info-value text-info" id="speedDisplay">0/s</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="loading-progress-bar">
+            <div id="progressBarOverlay" class="loading-progress-fill" style="width: 0%;">
+                <span id="progressTextOverlay">0%</span>
+            </div>
+        </div>
+        
+        <p id="processingStatus" class="text-white mb-3" style="font-size: 0.95rem;">
+            <i class="bi bi-arrow-right-circle"></i> Initializing preprocessing pipeline...
+        </p>
+        
+        <div class="mb-3">
+            <div class="spinner-grow spinner-grow-sm text-primary mx-1" role="status"></div>
+            <div class="spinner-grow spinner-grow-sm text-success mx-1" role="status"></div>
+            <div class="spinner-grow spinner-grow-sm text-info mx-1" role="status"></div>
+        </div>
+        
+        <p class="text-warning small mb-0">
+            <i class="bi bi-exclamation-triangle"></i> Please do not close this page
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let timerInterval = null;
+let startTime = 0;
+let pollInterval = null;
+
+function startTimer() {
+    startTime = Date.now();
+    timerInterval = setInterval(updateTimer, 1000);
+}
+
+function stopTimer() {
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+    if (pollInterval) {
+        clearInterval(pollInterval);
+        pollInterval = null;
+    }
+}
+
+function updateTimer() {
+    const elapsed = Date.now() - startTime;
+    const seconds = Math.floor(elapsed / 1000);
+    
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    
+    const display = `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    document.getElementById('timerDisplay').textContent = display;
+    
+    const statusEl = document.getElementById('processingStatus');
+    if (seconds < 5) {
+        statusEl.innerHTML = '<i class="bi bi-arrow-right-circle"></i> Initializing preprocessing pipeline...';
+    } else if (seconds < 15) {
+        statusEl.innerHTML = '<i class="bi bi-arrow-right-circle"></i> Cleaning text (URLs, mentions, hashtags)...';
+    } else if (seconds < 30) {
+        statusEl.innerHTML = '<i class="bi bi-arrow-right-circle"></i> Normalizing slang words...';
+    } else if (seconds < 60) {
+        statusEl.innerHTML = '<i class="bi bi-arrow-right-circle"></i> Removing stopwords...';
+    } else if (seconds < 90) {
+        statusEl.innerHTML = '<i class="bi bi-arrow-right-circle"></i> Applying stemming (Sastrawi)...';
+    } else if (seconds < 120) {
+        statusEl.innerHTML = '<i class="bi bi-arrow-right-circle"></i> Tokenization and finalization...';
+    } else {
+        statusEl.innerHTML = '<i class="bi bi-hourglass-split"></i> Almost done, finalizing results...';
+    }
+}
+
+function pollProgress() {
+    const datasetId = window.location.pathname.split('/')[2];
+    
+    fetch(`/datasets/${datasetId}/preprocess/status/`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const processed = data.preprocessed_count;
+                const total = data.total_tweets;
+                const progress = data.progress;
+                
+                document.getElementById('processedTweets').textContent = processed;
+                document.getElementById('progressBarOverlay').style.width = progress + '%';
+                document.getElementById('progressTextOverlay').textContent = Math.round(progress) + '%';
+                
+                const elapsed = (Date.now() - startTime) / 1000;
+                const speed = elapsed > 0 ? (processed / elapsed).toFixed(1) : 0;
+                document.getElementById('speedDisplay').textContent = speed + '/s';
+                
+                if (progress >= 100) {
+                    stopTimer();
+                    document.getElementById('processingStatus').innerHTML = '<i class="bi bi-check-circle"></i> Preprocessing complete!';
+                }
+            }
+        })
+        .catch(error => console.error('Error polling:', error));
+}
+
+document.getElementById('preprocessForm')?.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    document.getElementById('loadingOverlay').classList.add('show');
+    document.getElementById('startBtn').disabled = true;
+    
+    startTimer();
+    pollInterval = setInterval(pollProgress, 2000);
+    
+    const statusMsg = document.getElementById('statusMessage');
+    statusMsg.className = 'alert alert-modern alert-warning';
+    statusMsg.innerHTML = `
+        <div class="d-flex align-items-center">
+            <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+            <div>
+                <strong>Processing...</strong><br>
+                <small>Please wait while we process your tweets</small>
+            </div>
+        </div>
+    `;
+
+    const formData = new FormData(this);
+
+    fetch(window.location.href, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => {
+        if (response.redirected) {
+            document.getElementById('progressBarOverlay').style.width = '100%';
+            document.getElementById('progressTextOverlay').textContent = '100%';
+            stopTimer();
+            
+            setTimeout(() => {
+                window.location.href = response.url;
+            }, 500);
+        } else {
+            return response.text();
+        }
+    })
+    .then(html => {
+        if (html) {
+            document.open();
+            document.write(html);
+            document.close();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        stopTimer();
+        document.getElementById('loadingOverlay').classList.remove('show');
+        document.getElementById('startBtn').disabled = false;
+        
+        statusMsg.className = 'alert alert-modern alert-danger';
+        statusMsg.innerHTML = `
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <strong>Error occurred</strong><br>
+            <small>${error.message}</small>
+        `;
+    });
+});
+
+window.addEventListener('beforeunload', function() {
+    stopTimer();
+});
+</script>
+{% endblock %}

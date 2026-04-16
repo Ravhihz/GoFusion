@@ -1,0 +1,58 @@
+{% if not_relevant_page_obj %}
+    <div class="table-responsive">
+        <table class="table table-sm table-hover">
+            <thead>
+                <tr>
+                    <th>Text</th>
+                    <th width="130">Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tweet in not_relevant_page_obj %}
+                <tr>
+                    <td>{{ tweet.text|truncatewords:30 }}</td>
+                    <td><small>{{ tweet.created_at|date:"Y-m-d H:i" }}</small></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Pagination for Not Relevant -->
+    {% if not_relevant_paginator.num_pages > 1 %}
+    <div class="mt-3">
+        <small class="text-muted">
+            Page {{ not_relevant_page_obj.number }} of {{ not_relevant_paginator.num_pages }}
+        </small>
+        <nav aria-label="Not relevant pagination">
+            <ul class="pagination pagination-sm justify-content-center mb-0 mt-2">
+                {% if not_relevant_page_obj.has_previous %}
+                <li class="page-item">
+                    <a href="#" class="page-link not-relevant-page-link" data-page="{{ not_relevant_page_obj.previous_page_number }}">Previous</a>
+                </li>
+                {% endif %}
+                
+                {% for num in not_relevant_paginator.page_range %}
+                    {% if not_relevant_page_obj.number == num %}
+                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > not_relevant_page_obj.number|add:'-3' and num < not_relevant_page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a href="#" class="page-link not-relevant-page-link" data-page="{{ num }}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if not_relevant_page_obj.has_next %}
+                <li class="page-item">
+                    <a href="#" class="page-link not-relevant-page-link" data-page="{{ not_relevant_page_obj.next_page_number }}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+{% else %}
+    <div class="alert alert-warning mb-0">
+        <i class="bi bi-exclamation-triangle"></i> No not-relevant tweets found
+    </div>
+{% endif %}
